@@ -350,6 +350,24 @@ const safeUrl = u => /^https:\/\//i.test(String(u || "")) ? u : null;
 let state = { saved:{}, applied:{}, hidden:{}, notes:{} };
 try { const s = JSON.parse(localStorage.getItem(LSKEY)); if (s && typeof s === "object") state = Object.assign(state, s); } catch(e){}
 const persist = () => { try { localStorage.setItem(LSKEY, JSON.stringify(state)); } catch(e){} };
+/* one-time preserving migration from the previous build's store (ci-jobstate-v1:<site>, shape {jobs:{id:{saved,applied,hidden,note}}}).
+   Runs only when the new key is absent, copies values (ISO timestamps kept as truthy flags), never deletes or overwrites the old key. */
+try {
+  if (!localStorage.getItem(LSKEY)) {
+    const old = JSON.parse(localStorage.getItem("ci-jobstate-v1:" + SITE.key) || "null");
+    if (old && old.jobs && typeof old.jobs === "object") {
+      let moved = 0;
+      for (const [id, s] of Object.entries(old.jobs)) {
+        if (!s || typeof s !== "object") continue;
+        if (s.saved) { state.saved[id] = s.saved; moved++; }
+        if (s.applied) { state.applied[id] = s.applied; moved++; }
+        if (s.hidden) { state.hidden[id] = s.hidden; moved++; }
+        if (s.note) { state.notes[id] = String(s.note); moved++; }
+      }
+      if (moved) persist();
+    }
+  }
+} catch(e){}
 let lang = localStorage.getItem(LANGKEY) === "ar" ? "ar" : "en";
 let theme = localStorage.getItem(THEMEKEY);
 if (!["light","dark","graphite","navy"].includes(theme)) theme = "dark";
