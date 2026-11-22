@@ -1,0 +1,30 @@
+{
+ "note": "2026-11-21 manual adjudication of verified+flagged jobs using full listing descriptions fetched from source pages (HTTP 200, saved /tmp/listings, parsed via JSON-LD JobPosting). relevant = duties confirmed on-theme, flag cleared. excluded = duties off-theme (infra network architect, not applied-AI), stays out of release inventory.",
+ "resolved_relevant": [
+  "head-of-product-dune-156144",
+  "staff-product-manager-fintech-new-bets-jobber-153625",
+  "product-manager-data-ai-freshpaint-163491",
+  "principal-product-manager-identity-trust-life360-155974",
+  "product-owner-payments-and-infrastructure-flex-155771",
+  "monetization-growth-product-manager-classdojo-155530",
+  "langfuse-product-designer-clickhouse-langfuse-product-designer-berlin-465839",
+  "senior-product-manager-core-experience-n8n-senior-product-manager-core-experience-berlin-3",
+  "product-design-manager-n8n-product-design-manager-germany-410873",
+  "staff-machine-learning-engineer-betterhelp-163394",
+  "director-of-ai-ml-bayesian-health-153513",
+  "ai-r-d-engineer-model-training-f-m-d-alephalpha-ai-rd-engineer-model-training-heidelberg-1",
+  "senior-ai-r-d-engineer-model-training-f-m-d-alephalpha-senior-ai-rd-engineer-model-trainin",
+  "senior-manager-product-marketing-remote-within-the-united-st-163559"
+ ],
+ "excluded_mismatch": {
+  "ai-fabric-architect-fal-ai-remote-ai-fabric-architect-51975": "Network fabric/datacenter infrastructure architect (NIC, spine-leaf) at an AI company; duties are not applied-AI/ML. Excluded from AI release inventory as unresolved mismatch.",
+  "infrastructure-manager-m-w-d-for-ai-ops-implementation-capco-infrastructure-manager-for-ai": "Infrastructure/project-management duties (networking, virtualization, containerization, cloud, ITIL/DevOps governance) on an AI Ops implementation engagement; duties are not applied-AI building. Confirmed 2026-11-22 via live listing page (arbeitnow JSON-LD JobPosting, HTTP 200). Excluded from AI release inventory per the ai-fabric-architect precedent; title token 'AI Ops' alone is not qualification."
+ },
+ "excluded_source_blocked": {
+  "tech-product-manager-agentic-platform-mirakllabs-tech-product-manager-agentic-platform-par": "arbeitnow.fr page + apply both 403 bot-block (terminal); duties/eligibility/destination unverifiable from source. Excluded from release inventory until accessible.",
+  "technical-project-manager-france-tandem-health-technical-project-manager-france-paris-5380": "same 403 block, arbeitnow.fr",
+  "senior-ai-engineer-product-mirakllabs-senior-ai-engineer-product-paris-100724": "same 403 block, arbeitnow.fr",
+  "tech-product-manager-agentic-platform-mirakllabs-tech-product-manager-agentic-platform-bor": "same 403 block, arbeitnow.fr",
+  "senior-ai-engineer-product-mirakllabs-senior-ai-engineer-product-bordeaux-416821": "same 403 block, arbeitnow.fr"
+ }
+}
