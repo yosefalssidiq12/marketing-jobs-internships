@@ -14,8 +14,14 @@ Honesty policy (owner directive, confirmed 2026-11-22):
   presented as newly verified.
 - A row is carried only while (a) it still appears in the fresh fetch (or, for
   jobicy, the official status endpoint still reports it active) and (b) its
-  verification date is at most CARRY_TTL_DAYS old. Otherwise it is excluded
-  from the publishable inventory and recorded in the run report as archived.
+  verification date is at most CARRY_TTL_DAYS old.
+- Grace (accepted 2026-11-22): a non-jobicy row that VANISHES from a capped or
+  rotating feed is carried until UTC midnight of its original verification date
+  (CARRY_TTL_DAYS = 0), keeping that date and method verbatim; prior-day carry
+  is rejected and archived as stale. Vanished is not closed: only an explicit
+  negative signal (jobicy non-active status, or a current-run positive expiry
+  notice) removes a row same-day. Otherwise a row is excluded from the
+  publishable inventory and recorded in the run report as archived.
 - Relevance: fresh rows need duties evidence in the description, or an
   adjudication.resolved_relevant entry. adjudication.excluded_mismatch never
   publishes (duties, not titles, qualify listings).
@@ -223,6 +229,12 @@ def main():
             ver_date = lv_date
             jobs_out.append(emit_from_fresh(j, method, ver_date, keep_id=(prev_row or {}).get("id")))
             report["fresh_verified"][method] = report["fresh_verified"].get(method, 0) + 1
+        elif j.get("expired_this_run") is True and prev_row is not None:
+            # F6 (QA 2026-11-22): a positive expiry notice recorded by THIS run's content check
+            # (structured flag set only by verify.py in this run) archives before carry - the
+            # content-check equivalent of F2's jobicy non-active status. The second loop's
+            # archived-check prevents resurrection.
+            report["archived"].append({"id": prev_row["id"], "reason": f"content check: expiry notice {TODAY}"})
         elif prev_row is not None and prev_row.get("verified"):
             if too_old(prev_row):
                 report["archived"].append({"id": prev_row["id"], "reason": f"carried verification older than {CARRY_TTL_DAYS}d"})
