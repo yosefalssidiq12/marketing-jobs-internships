@@ -111,6 +111,8 @@ def main():
     verify = load_mod("verify")
     verify.main()
     d = json.load(open(coll_path))
+    dedup_losers = {l["id"]: l for l in (d.get("dedup_losers") or [])}  # F9: confirmed dedup losers
+    dedup_loser_ck = {l["source"] + ":" + (l.get("source_id") or l["id"]): l for l in (d.get("dedup_losers") or []) if l.get("source")}
 
     # 3b. jobicy status for PREV-published jobicy rows absent from this fetch
     prev_path = os.path.join(OUT, "data-release", f"{site}.json")
@@ -246,6 +248,13 @@ def main():
     for ck, r in prev_by_ck.items():
         if any(o["canonical_key"] == ck for o in jobs_out): continue
         if any(a.get("id") == r["id"] for a in report["archived"]): continue
+        loser = dedup_loser_ck.get(ck) or dedup_losers.get(r["id"])
+        if loser:
+            # F9: this prev row's fresh record merged into a confirmed duplicate at collect
+            # time (explicit loser identity). Archive with a duplicate-of reason; ordinary
+            # same-day vanished grace must not resurrect it. Other vanished rows are unaffected.
+            report["archived"].append({"id": r["id"], "reason": "dedup duplicate of " + loser.get("survivor_url", loser["duplicate_of"]) + " (" + loser.get("via", "?") + ")"})
+            continue
         src, _, sid = ck.partition(":")
         if src == "jobicy" and sid in prev_jobicy_status and str(prev_jobicy_status.get(sid)).lower() not in ACTIVE_STATUSES:
             report["archived"].append({"id": r["id"], "reason": "jobicy status endpoint: " + str(prev_jobicy_status.get(sid)).lower()})
