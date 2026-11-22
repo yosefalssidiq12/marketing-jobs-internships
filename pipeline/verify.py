@@ -52,19 +52,28 @@ def content_check(j):
     try:
         code, html = fetch(j["url"])
     except urllib.error.HTTPError as e:
-        return False, f"content check: HTTP {e.code} (inconclusive, not marked closed)"
+        return False, f"content check: HTTP {e.code} (inconclusive, not marked closed)", False
     except Exception as e:
-        return False, f"content check: fetch error {type(e).__name__} (inconclusive)"
+        return False, f"content check: fetch error {type(e).__name__} (inconclusive)", False
     low = html.lower()
     words = [w for w in re.findall(r"[a-z\u00C0-\u024F]{4,}", j["title"].lower())][:4]
     found = sum(1 for w in words if w in low)
     expired = any(p in low for p in EXPIRY)
     ok = code == 200 and found >= max(1, len(words) // 2) and not expired
-    return ok, f"content check: HTTP {code}, title words {found}/{len(words)}, expiry-notice {expired}"
+    return ok, f"content check: HTTP {code}, title words {found}/{len(words)}, expiry-notice {expired}", expired
 
 def main():
     d = json.load(open(os.path.join(OUT, "collected.json")))
     act = d["jobs"]
+    # F6b (QA 2026-11-22): transient current-run verdict flags are verify.py's own output -
+    # never trust a copied input flag. Reset them on every active row at entry, before caps,
+    # skips and checks, so a stale copied expiry/verified/inactive claim cannot survive a run
+    # that 403s, errors, or skips the row. Historical timestamps/notes (last_verified,
+    # verification) are NOT touched here; they are preserved state.
+    for j in act:
+        j.pop("expired_this_run", None)
+        j.pop("verified_this_run", None)
+        j.pop("jobicy_inactive", None)
     # 1. jobicy official status for every jobicy record
     jids = [j["source_id"] for j in act if j["source"] == "jobicy" and j["source_id"]]
     st = jobicy_status(jids)
@@ -89,12 +98,14 @@ def main():
         attempted = 0
         for j in pool:
             if attempted >= cap: break
-            prev = str(j.get("verification") or "")
-            if prev.startswith("content check: HTTP 403"):
-                continue  # 403 bot-block is terminal; no automatic domain retry
+            # F6 (QA 2026-11-22): no cross-run 403 suppression - a transient bot block must not
+            # suppress re-verification forever. Exactly one attempt per canonical URL per run
+            # (existing cap + 1s pacing unchanged); a fresh 403 stays inconclusive, never closed.
             attempted += 1
-            ok, note = content_check(j)
+            ok, note, expired = content_check(j)
             j["verification"] = note
+            if expired and not ok:
+                j["expired_this_run"] = True  # structured current-run provenance: positive closure signal
             if ok:
                 j["last_verified"] = NOW
                 j["verified_this_run"] = True   # explicit current-run success evidence
