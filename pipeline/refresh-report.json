@@ -1,6 +1,6 @@
 {
  "site": "marketing",
- "run_at": "2026-11-22T05:31:08.500419+00:00",
+ "run_at": "2026-11-22T06:47:31.933157+00:00",
  "dry_run": false,
  "fresh_verified": {
   "jobicy_status_endpoint": 26,
@@ -18,10 +18,10 @@
  "archived": [],
  "excluded": [],
  "errors": [],
- "prev_jobicy_status_checked": 1,
+ "prev_jobicy_status_checked": 4,
  "counts": {
   "publishable": 36,
-  "prev": 35,
+  "prev": 36,
   "fresh": 29,
   "carried": 7,
   "archived": 0,
@@ -29,7 +29,7 @@
  },
  "fresh_verified_by_source": {
   "arbeitnow": {
-   "eligible": 162,
+   "eligible": 160,
    "fresh_success": 24
   }
  },
@@ -48,8 +48,8 @@
   },
   "source_counts": {
    "jobicy": 351,
-   "arbeitnow": 859
+   "arbeitnow": 857
   }
  },
- "build_sha256_16": "0436bbfdedde1f80"
+ "build_sha256_16": "ff50c1fbf4ee0db7"
 }
