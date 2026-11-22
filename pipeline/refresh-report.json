@@ -1,0 +1,47 @@
+{
+ "site": "marketing",
+ "run_at": "2026-11-22T01:42:27.161652+00:00",
+ "dry_run": false,
+ "fresh_verified": {
+  "jobicy_status_endpoint": 26,
+  "bounded_content_check": 4
+ },
+ "carried": [
+  "social-media-e-mail-marketing-manager-m-w-d-fokus-klettern-b-social-media-e-mail-marketing",
+  "senior-data-scientist-marketing-dsa-vinteden-senior-data-scientist-marketing-dsa-berlin-48",
+  "senior-product-marketing-manager-emea-camunda-remote-senior-product-marketing-manager-emea",
+  "senior-partner-marketing-manager-gsis-n8n-senior-partner-marketing-manager-gsis-berlin-448",
+  "pflichtpraktikum-social-media-und-content-marketing-m-w-d-tr-pflichtpraktikum-social-media"
+ ],
+ "archived": [],
+ "excluded": [],
+ "errors": [],
+ "prev_jobicy_status_checked": 1,
+ "counts": {
+  "publishable": 35,
+  "prev": 28,
+  "fresh": 30,
+  "carried": 5,
+  "archived": 0,
+  "excluded": 0
+ },
+ "publication_gate": {
+  "passed": true,
+  "breaches": [],
+  "rules": {
+   "min_absolute": 5,
+   "min_ratio_vs_prev": 0.5,
+   "require_collection_nonempty": true,
+   "require_fresh_verification": true,
+   "expected_sources_nonempty": [
+    "jobicy",
+    "arbeitnow"
+   ]
+  },
+  "source_counts": {
+   "jobicy": 356,
+   "arbeitnow": 867
+  }
+ },
+ "build_sha256_16": "3fe44d3a32831b2e"
+}
