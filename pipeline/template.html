@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; font-src 'self'; form-action 'none'; base-uri 'none'; object-src 'none'">
+<title>__TITLE_EN__</title>
+<meta name="description" content="__META_DESC__">
+<meta name="theme-color" content="__THEME_COLOR__">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='__FAV_HUE__'/%3E%3C/svg%3E">
+<meta property="og:title" content="__TITLE_EN__">
+<meta property="og:description" content="__META_DESC__">
+<meta property="og:type" content="website">
+<meta property="og:url" content="__PROD_URL__">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="__TITLE_EN__">
+<meta name="twitter:description" content="__META_DESC__">
+<style>
+:root{
+  --ease:cubic-bezier(.22,.9,.28,1);
+  --r-lg:18px; --r-md:12px; --r-sm:9px;
+}
+html[data-theme="dark"]{
+  --bg:#0d1117; --bg2:#111827; --card:rgba(255,255,255,.045); --card-brd:rgba(255,255,255,.09);
+  --text:#e8edf5; --muted:#93a0b4; --chip:rgba(255,255,255,.06); --chip-brd:rgba(255,255,255,.12);
+  --accent:hsl(var(--hue) 85% 62%); --accent2:hsl(calc(var(--hue) + 40) 80% 60%);
+  --accent-cta:hsl(var(--hue) 85% 69%); --accent-cta2:hsl(calc(var(--hue) + 40) 80% 69%); --accent-text:hsl(var(--hue) 85% 70%);
+  --accent-ink:#0b0f16; --glow:hsla(var(--hue) 85% 60%/.16);
+  --ok:#34d399; --warn:#fbbf24; --dead:#f87171; --shadow:0 10px 34px rgba(0,0,0,.42);
+  color-scheme:dark;
+}
+html[data-theme="light"]{
+  --bg:#f6f7fb; --bg2:#ffffff; --card:#ffffff; --card-brd:#e5e9f2;
+  --text:#141a26; --muted:#5b6678; --chip:#eef1f7; --chip-brd:#dde3ee;
+  --accent:hsl(var(--hue) 72% 42%); --accent2:hsl(calc(var(--hue) + 40) 70% 46%);
+  --accent-cta:hsl(var(--hue) 72% 28%); --accent-cta2:hsl(calc(var(--hue) + 40) 70% 28%); --accent-text:hsl(var(--hue) 72% 30%);
+  --accent-ink:#ffffff; --glow:hsla(var(--hue) 75% 55%/.10);
+  --ok:#0e9f6e; --warn:#b45309; --dead:#dc2626; --shadow:0 8px 26px rgba(20,26,38,.09);
+  color-scheme:light;
+}
+html[data-theme="graphite"]{
+  --bg:#1c1d21; --bg2:#232428; --card:rgba(255,255,255,.05); --card-brd:rgba(255,255,255,.10);
+  --text:#eceef2; --muted:#a3a8b3; --chip:rgba(255,255,255,.07); --chip-brd:rgba(255,255,255,.13);
+  --accent:hsl(var(--hue) 60% 66%); --accent2:hsl(calc(var(--hue) + 40) 58% 64%);
+  --accent-cta:hsl(var(--hue) 60% 67%); --accent-cta2:hsl(calc(var(--hue) + 40) 58% 67%); --accent-text:hsl(var(--hue) 60% 68%);
+  --accent-ink:#17181c; --glow:hsla(var(--hue) 60% 62%/.14);
+  --ok:#4ade80; --warn:#fcd34d; --dead:#fca5a5; --shadow:0 10px 30px rgba(0,0,0,.38);
+  color-scheme:dark;
+}
+html[data-theme="navy"]{
+  --bg:#0a1628; --bg2:#0f1e36; --card:rgba(255,255,255,.05); --card-brd:rgba(160,190,255,.14);
+  --text:#e6eefb; --muted:#93a7c7; --chip:rgba(140,175,255,.09); --chip-brd:rgba(140,175,255,.20);
+  --accent:hsl(var(--hue) 88% 66%); --accent2:hsl(calc(var(--hue) + 40) 84% 62%);
+  --accent-cta:hsl(var(--hue) 88% 70%); --accent-cta2:hsl(calc(var(--hue) + 40) 84% 70%); --accent-text:hsl(var(--hue) 88% 70%);
+  --accent-ink:#081226; --glow:hsla(var(--hue) 88% 62%/.18);
+  --ok:#34d399; --warn:#fbbf24; --dead:#f87171; --shadow:0 12px 36px rgba(2,8,23,.55);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; font-family:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,"Noto Kufi Arabic","Noto Sans Arabic",sans-serif;
+  background:var(--bg); color:var(--text); min-height:100vh;
+  transition:background .5s var(--ease), color .5s var(--ease);
+  -webkit-font-smoothing:antialiased;
+}
+/* ambient motion layer */
+.ambient{position:fixed; inset:0; z-index:-2; overflow:hidden; pointer-events:none;
+  background:
+    radial-gradient(120% 90% at 85% -10%, var(--glow), transparent 55%),
+    radial-gradient(110% 80% at -10% 110%, var(--glow), transparent 50%),
+    var(--bg);
+  transition:background .5s var(--ease);
+}
+.blob{position:absolute; border-radius:50%; filter:blur(70px); opacity:.5; will-change:transform}
+.blob.b1{width:44vmax;height:44vmax; top:-16vmax; inset-inline-end:-12vmax; background:hsla(var(--hue) 85% 55%/.16); animation:drift1 26s var(--ease) infinite alternate}
+.blob.b2{width:36vmax;height:36vmax; bottom:-14vmax; inset-inline-start:-10vmax; background:hsla(calc(var(--hue) + 40) 80% 55%/.13); animation:drift2 32s var(--ease) infinite alternate}
+.blob.b3{width:22vmax;height:22vmax; top:38%; inset-inline-start:34%; background:hsla(calc(var(--hue) - 30) 80% 58%/.10); animation:drift3 38s var(--ease) infinite alternate}
+@keyframes drift1{from{transform:translate(0,0) scale(1)}to{transform:translate(-6vmax,5vmax) scale(1.12)}}
+@keyframes drift2{from{transform:translate(0,0) scale(1.05)}to{transform:translate(5vmax,-6vmax) scale(.94)}}
+@keyframes drift3{from{transform:translate(0,0)}to{transform:translate(-4vmax,-4vmax) scale(1.15)}}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important; transition:none!important; scroll-behavior:auto!important}
+}
+.wrap{max-width:1180px; margin:0 auto; padding:0 18px}
+.skip{position:absolute; inset-inline-start:-999px; top:0; background:var(--accent-cta); color:var(--accent-ink); padding:8px 14px; border-radius:0 0 var(--r-sm) 0; z-index:50}
+.skip:focus{inset-inline-start:0}
+/* header */
+header.bar{position:sticky; top:0; z-index:20; backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  background:color-mix(in srgb, var(--bg) 78%, transparent); border-bottom:1px solid var(--card-brd)}
+.bar-in{display:flex; align-items:center; gap:14px; padding:12px 22px; flex-wrap:wrap}
+.sites{display:flex; gap:8px; justify-content:center; padding:0 22px 10px; flex-wrap:wrap}
+.site-link{font-size:12.5px; font-weight:650; color:var(--muted); text-decoration:none; padding:5px 12px; border-radius:999px; border:1px solid var(--line); transition:color .18s, border-color .18s}
+.site-link:hover{color:var(--text); border-color:var(--acc)}
+.site-link.cur{color:var(--acc); border-color:var(--acc); background:color-mix(in srgb, var(--acc) 10%, transparent)}
+.brand{font-weight:800; font-size:17px; letter-spacing:.2px; display:flex; align-items:center; gap:9px}
+.brand .dot{width:11px;height:11px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2)); box-shadow:0 0 14px var(--glow); animation:pulse 3.4s var(--ease) infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.25);opacity:.75}}
+.bar-sp{flex:1}
+.ctl-group{display:flex; align-items:center; gap:8px}
+.ctl-lbl{font-size:12px; color:var(--muted)}
+.seg{display:flex; background:var(--chip); border:1px solid var(--chip-brd); border-radius:999px; padding:3px; gap:2px}
+.seg button{border:0; background:transparent; color:var(--muted); font:inherit; font-size:12.5px; font-weight:650;
+  padding:6px 12px; border-radius:999px; cursor:pointer; transition:all .22s var(--ease)}
+.seg button:hover{color:var(--text)}
+.seg button[aria-pressed="true"]{background:linear-gradient(135deg,var(--accent-cta),var(--accent-cta2)); color:var(--accent-ink)}
+.swatches{display:flex; gap:7px}
+.sw{width:40px;height:40px;border-radius:50%;cursor:pointer;border:2px solid transparent; padding:8px;background-clip:content-box;
+  transition:transform .22s var(--ease), border-color .22s var(--ease)}
+.sw:hover{transform:scale(1.18)}
+.sw[aria-pressed="true"]{border-color:var(--accent); transform:scale(1.14)}
+.sw[data-t="light"]{background:linear-gradient(135deg,#ffffff,#dfe5f0)}
+.sw[data-t="dark"]{background:linear-gradient(135deg,#141a26,#2b3648)}
+.sw[data-t="graphite"]{background:linear-gradient(135deg,#3a3b40,#6a6c74)}
+.sw[data-t="navy"]{background:linear-gradient(135deg,#0f1e36,#2b4a7f)}
+/* hero */
+.hero{padding:52px 0 8px}
+.hero h1{font-size:clamp(30px,4.6vw,46px); line-height:1.14; margin:0 0 12px; font-weight:850; letter-spacing:-.5px;
+  background:linear-gradient(120deg,var(--text) 30%,var(--accent-text) 75%,var(--accent-text)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent}
+.hero .sub{color:var(--muted); font-size:15.5px; max-width:760px; line-height:1.75; margin:0 0 18px}
+.snap{display:inline-flex; align-items:center; gap:8px; font-size:12.5px; color:var(--muted);
+  background:var(--chip); border:1px solid var(--chip-brd); border-radius:999px; padding:6px 14px}
+.snap b{color:var(--text); font-weight:700}
+/* breakdown */
+.breaks{display:flex; flex-wrap:wrap; gap:8px; margin:20px 0 4px}
+.bchip{display:inline-flex; align-items:baseline; gap:7px; background:var(--card); border:1px solid var(--card-brd);
+  border-radius:999px; padding:7px 14px; font-size:13px; box-shadow:var(--shadow)}
+.bchip b{font-size:16px; font-weight:800; color:var(--accent-text); font-variant-numeric:tabular-nums}
+.bchip span{color:var(--muted)}
+/* search */
+.search-zone{position:relative; margin:26px 0 18px; max-width:640px}
+.search-box{display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--card-brd);
+  border-radius:999px; padding:5px 8px 5px 20px; box-shadow:var(--shadow); transition:border-color .25s var(--ease), box-shadow .25s var(--ease)}
+[dir="rtl"] .search-box{padding:5px 20px 5px 8px}
+.search-box:focus-within{border-color:var(--accent); box-shadow:0 0 0 4px var(--glow)}
+.search-box svg{flex:none; stroke:var(--muted)}
+.search-box input{flex:1; border:0; background:transparent; color:var(--text); font:inherit; font-size:15px; padding:10px 0; outline:none}
+.search-box input::placeholder{color:var(--muted)}
+.sug{position:absolute; top:calc(100% + 8px); inset-inline:0; background:var(--bg2); border:1px solid var(--card-brd);
+  border-radius:var(--r-lg); box-shadow:var(--shadow); overflow:hidden; z-index:15; display:none}
+.sug.open{display:block; animation:pop .18s var(--ease)}
+@keyframes pop{from{opacity:0; transform:translateY(-6px)}to{opacity:1; transform:none}}
+.sug button{display:flex; width:100%; align-items:center; gap:10px; padding:11px 18px; border:0; background:transparent;
+  color:var(--text); font:inherit; font-size:14px; cursor:pointer; text-align:start}
+.sug button.hl, .sug button:hover{background:var(--chip); outline:none;}
+.sug button:hover,.sug button:focus-visible{background:var(--chip)}
+.sug .k{font-size:11px; color:var(--muted); border:1px solid var(--chip-brd); border-radius:999px; padding:2px 9px}
+.sug .n{margin-inline-start:auto; color:var(--accent-text); font-weight:750; font-size:13px}
+/* filters */
+.filters{margin:6px 0 10px}
+.f-row{display:flex; align-items:flex-start; gap:12px; margin:10px 0; flex-wrap:wrap}
+.f-lbl{flex:none; width:86px; padding-top:8px; font-size:12px; font-weight:750; letter-spacing:.8px; text-transform:uppercase; color:var(--muted)}
+.chips{display:flex; flex-wrap:wrap; gap:7px}
+.chip{border:1px solid var(--chip-brd); background:var(--chip); color:var(--text); font:inherit; font-size:13px; font-weight:600;
+  padding:7px 14px; border-radius:999px; cursor:pointer; transition:all .2s var(--ease)}
+.chip:hover{border-color:var(--accent); transform:translateY(-1px)}
+.chip:active{transform:scale(.96)}
+.chip[aria-pressed="true"]{background:linear-gradient(135deg,var(--accent-cta),var(--accent-cta2)); color:var(--accent-ink); border-color:transparent; font-weight:750}
+.chip .c{opacity:.75; font-size:11.5px; font-variant-numeric:tabular-nums}
+.reset{margin-inline-start:auto; align-self:center}
+/* results meta */
+.meta-line{display:flex; align-items:center; gap:10px; margin:16px 0 14px; font-size:13px; color:var(--muted); flex-wrap:wrap}
+.meta-line b{color:var(--text)}
+.export{margin-inline-start:auto}
+.btn{border:0; font:inherit; font-weight:700; font-size:13px; border-radius:999px; padding:9px 18px; cursor:pointer;
+  transition:all .22s var(--ease); background:var(--chip); color:var(--text); border:1px solid var(--chip-brd)}
+.btn:hover{transform:translateY(-1px); border-color:var(--accent)}
+.btn.primary{background:linear-gradient(135deg,var(--accent-cta),var(--accent-cta2)); color:var(--accent-ink); border:0; box-shadow:0 6px 20px var(--glow)}
+.btn.primary:hover{transform:translateY(-2px); box-shadow:0 10px 26px var(--glow)}
+/* cards */
+.grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(345px,1fr)); gap:16px; padding-bottom:40px}
+@media (max-width:420px){.grid{grid-template-columns:1fr}}
+.job{background:var(--card); border:1px solid var(--card-brd); border-radius:var(--r-lg); padding:18px 18px 14px;
+  box-shadow:var(--shadow); backdrop-filter:blur(6px); position:relative; overflow:hidden;
+  opacity:0; transform:translateY(16px); transition:opacity .5s var(--ease), transform .5s var(--ease), border-color .25s var(--ease), box-shadow .25s var(--ease)}
+.job.in{opacity:1; transform:none}
+.job:hover{transform:translateY(-3px); border-color:color-mix(in srgb, var(--accent) 45%, var(--card-brd)); box-shadow:0 16px 40px var(--glow)}
+.job::before{content:""; position:absolute; inset-inline-start:0; top:0; bottom:0; width:3px;
+  background:linear-gradient(180deg,var(--accent),var(--accent2)); opacity:.85}
+.job-top{display:flex; align-items:center; gap:8px; margin-bottom:9px; flex-wrap:wrap}
+.job-n{font-size:11.5px; color:var(--muted); font-variant-numeric:tabular-nums}
+.tag{font-size:11px; font-weight:750; padding:3px 10px; border-radius:999px; background:var(--chip); border:1px solid var(--chip-brd)}
+.badge{font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px}
+.badge.new{background:color-mix(in srgb, var(--ok) 18%, transparent); color:var(--ok)}
+.badge.old{background:var(--chip); color:var(--muted)}
+.badge.dead{background:color-mix(in srgb, var(--dead) 16%, transparent); color:var(--dead)}
+.job-src{margin-inline-start:auto; font-size:11.5px; color:var(--muted)}
+.job h3{margin:2px 0 8px; font-size:16.5px; line-height:1.45; font-weight:750}
+.co{display:flex; align-items:center; gap:10px; color:var(--muted); font-size:13.5px; margin-bottom:12px}
+.av{flex:none; width:30px; height:30px; border-radius:9px; display:grid; place-items:center; font-size:10.5px; font-weight:800;
+  color:var(--accent-ink); background:linear-gradient(135deg,var(--accent-cta),var(--accent-cta2))}
+.specs{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:0 0 10px; padding:10px 0; border-top:1px solid var(--card-brd); border-bottom:1px solid var(--card-brd)}
+.spec .k{font-size:10px; letter-spacing:.7px; text-transform:uppercase; color:var(--muted); margin-bottom:3px}
+.spec .v{font-size:12.5px; font-weight:650}
+.dates{display:flex; gap:18px; font-size:11.5px; color:var(--muted); margin-bottom:10px; flex-wrap:wrap}
+.dates b{color:var(--text); font-weight:650}
+.note{font-size:12.5px; line-height:1.65; border-radius:var(--r-md); padding:10px 12px; margin-bottom:10px;
+  background:color-mix(in srgb, var(--warn) 12%, transparent); border:1px solid color-mix(in srgb, var(--warn) 30%, transparent)}
+.note b{display:block; color:var(--warn); margin-bottom:2px; font-size:12px}
+.elig{font-size:12px; color:var(--muted); margin-bottom:10px; line-height:1.6}
+.elig b{color:var(--text)}
+.actions{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:4px}
+.apply{display:inline-flex; align-items:center; gap:7px; text-decoration:none; font-size:13.5px; font-weight:750;
+  padding:10px 18px; border-radius:999px; color:var(--accent-ink); background:linear-gradient(135deg,var(--accent-cta),var(--accent-cta2));
+  box-shadow:0 6px 18px var(--glow); transition:all .22s var(--ease)}
+.apply:hover{transform:translateY(-2px) scale(1.02); box-shadow:0 10px 26px var(--glow)}
+.apply .ext{font-size:12px; opacity:.85}
+.avail{font-size:11px; color:var(--muted)}
+.mini{display:flex; gap:6px; width:100%; margin-top:8px; flex-wrap:wrap}
+.mini button{font:inherit; font-size:12px; font-weight:650; padding:7px 13px; border-radius:999px; cursor:pointer;
+  background:transparent; color:var(--muted); border:1px solid var(--chip-brd); transition:all .2s var(--ease)}
+.mini button:hover{color:var(--text); border-color:var(--accent)}
+.mini button.on{background:color-mix(in srgb, var(--accent) 20%, transparent); color:var(--accent-text); border-color:var(--accent)}
+.notes{width:100%; margin-top:8px}
+.notes textarea{width:100%; min-height:64px; resize:vertical; border-radius:var(--r-md); border:1px solid var(--chip-brd);
+  background:var(--bg2); color:var(--text); font:inherit; font-size:13px; padding:10px 12px; outline:none}
+.notes textarea:focus{border-color:var(--accent)}
+/* empty */
+.empty{grid-column:1/-1; text-align:center; padding:64px 20px; color:var(--muted)}
+.empty .big{font-size:42px; margin-bottom:10px}
+.empty h2{color:var(--text); font-size:19px; margin:0 0 8px}
+/* footer */
+footer.site{border-top:1px solid var(--card-brd); padding:26px 0 44px; color:var(--muted); font-size:12.5px; line-height:1.9}
+footer.site b{color:var(--text)}
+:focus-visible{outline:2.5px solid var(--accent); outline-offset:2px; border-radius:6px}
+@media (max-width:760px){
+  .hero{padding:36px 0 4px}
+  .f-lbl{width:100%; padding-top:2px}
+  .specs{grid-template-columns:repeat(2,1fr)}
+  .reset{margin-inline-start:0}
+}
+.reveal{opacity:0; transform:translateY(14px); transition:opacity .55s var(--ease), transform .55s var(--ease)}
+.reveal.in{opacity:1; transform:none}
+details.archive{margin:0 0 40px; border:1px dashed var(--chip-brd); border-radius:var(--r-lg); padding:14px 18px}
+details.archive summary{cursor:pointer; font-size:13.5px; font-weight:700; color:var(--muted)}
+details.archive summary:hover{color:var(--text)}
+details.archive .job{opacity:1; transform:none; filter:saturate(.55)}
+.count-sep{margin:0 4px}
+</style>
+</head>
+<body>
+<a class="skip" href="#main" id="skip">Skip to jobs</a>
+<div class="ambient" aria-hidden="true"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
+<header class="bar">
+  <div class="wrap bar-in">
+    <div class="brand"><span class="dot" aria-hidden="true"></span><span id="brand">__BRAND_EN__</span></div>
+    <div class="bar-sp"></div>
+    <div class="ctl-group">
+      <span class="ctl-lbl" id="theme-lbl">Theme</span>
+      <div class="swatches" role="group" id="swatches" aria-label="Theme"></div>
+    </div>
+    <div class="ctl-group">
+      <span class="ctl-lbl" id="lang-lbl">Language</span>
+      <div class="seg" role="group" id="langseg">
+        <button type="button" data-l="en">EN</button>
+        <button type="button" data-l="ar">العربية</button>
+      </div>
+    </div>
+  </div>
+  <nav class="sites wrap" id="sites" aria-label="Career sites"></nav>
+</header>
+<main class="wrap" id="main">
+  <section class="hero reveal">
+    <h1 id="h1">__TITLE_EN__</h1>
+    <p class="sub" id="sub"></p>
+    <span class="snap" id="snap"></span>
+    <div class="breaks" id="breaks"></div>
+  </section>
+  <div class="search-zone reveal">
+    <div class="search-box">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/></svg>
+      <input id="q" type="search" autocomplete="off" aria-haspopup="listbox" aria-expanded="false">
+    </div>
+    <div class="sug" id="sug" role="listbox"></div>
+  </div>
+  <section class="filters reveal" aria-label="Filters">
+    <div class="f-row"><span class="f-lbl" id="l-where">Where</span><div class="chips" id="f-region"></div></div>
+    <div class="f-row"><span class="f-lbl" id="l-type">Job type</span><div class="chips" id="f-type"></div></div>
+    <div class="f-row"><span class="f-lbl" id="l-place">Workplace</span><div class="chips" id="f-place"></div></div>
+    <div class="f-row"><span class="f-lbl" id="l-sort">Sort by</span><div class="chips" id="f-sort"></div>
+      <div class="chips" id="f-list" style="margin-inline-start:auto"></div>
+      <button class="btn reset" id="reset" type="button">Clear</button>
+    </div>
+  </section>
+  <div class="meta-line">
+    <span id="count" aria-live="polite"></span>
+    <button class="btn export" id="csv" type="button">Export CSV</button>
+  </div>
+  <div class="grid" id="grid"></div>
+  <details class="archive" id="archive" hidden>
+    <summary id="archive-sum"></summary>
+    <div class="grid" id="archive-grid" style="padding-top:14px"></div>
+  </details>
+</main>
+<footer class="site">
+  <div class="wrap" id="foot"></div>
+</footer>
+<script>
+"use strict";
+const SITE = __SITE_CONFIG__;
+/* sibling sites of the family — stable production URLs */
+const SITENAV = [
+  ["bapm", "BA & PM", "BA وPM", "https://pm-ba-opportunities.vercel.app/"],
+  ["ai", "Applied AI", "الذكاء التطبيقي", "https://ai-automation-jobs-internships.vercel.app/"],
+  ["marketing", "Marketing", "التسويق", "https://marketing-jobs-internships.vercel.app/"],
+];
+const DATA = __DATA__;
+const ALL = DATA.jobs;
+const isDead = j => j.link_status && String(j.link_status).startsWith("dead");
+const JOBS = ALL.filter(j => !isDead(j));
+const PVM = DATA.verification_model === "pipeline";
+const REL = DATA.release_candidate === true;
+const VERN = PVM ? JOBS.filter(j => j.verified === true).length : JOBS.length;
+const ARCHIVED = ALL.filter(j => isDead(j));
+
+const I18N = {
+en:{
+  skip:"Skip to jobs", theme:"Theme", lang:"Language", sub:REL?(SITE.sub_en_rel||SITE.sub_en):PVM?(SITE.sub_en_pvm||SITE.sub_en):SITE.sub_en,
+  snapshot:d=>REL?`Snapshot dated ${d} (UTC). Every listing was individually checked against its live source on the snapshot date — official status endpoint or listing-page check, labeled per card; listings may still have changed or closed since. Apply links open the original posting.`:PVM?`Snapshot dated ${d} (UTC). Collected from established public job APIs; listings may have changed or closed since. Each card shows its own verification state.`:`Snapshot dated ${d} (UTC). This is a dated, work-in-progress snapshot: listings may have changed or closed since. Availability has not been re-verified against live sources.`,
+  searchPh:"Search title, company, city…", where:"Where", type:"Job type", place:"Workplace", sort:"Sort by",
+  all:"All", clear:"Clear filters", csv:"Export CSV",
+  sorts:{recent:"Recently posted",oldest:"Oldest posted",intern:"Internships first",comp:"Least competition"},
+  lists:{all:"All jobs",saved:"Saved",applied:"Applied",hidden:"Hidden"},
+  count:(n,t)=>REL?`Showing ${n} of ${t} snapshot listings`:PVM?`Showing ${n} of ${t} snapshot listings · ${VERN} listing-verified`:`Showing ${n} of ${t} verified snapshot listings`,
+  archive:n=>`${n} listing${n===1?"":"s"} reported closed since the snapshot (kept for the record, excluded from all counts)`, arcMatch:n=>`${n} match${n===1?"":"es"} current filters`,
+  internships:n=>`${n} internships in this snapshot`,
+  workplace:"Workplace", jtype:"Type", seniority:"Seniority", posted:"Posted", first:"First seen",
+  open:p=>`Open on ${p}`, avail:"Availability not verified", availDead:"Link reported closed on 21 Nov 2026 — verify before applying",
+  save:"Save", saved:"Saved", applied:"Mark applied", appliedOn:"Applied", hide:"Hide", hidden:"Hidden", note:"Note",
+  notePh:"Private note — stored only in this browser",
+  badgeNew:"New vs last published snapshot", badgeOld:"Also in last published snapshot", deadTag:"Link dead",
+  remote:"Remote world", notStated:"See posting",
+  emptyT:"No jobs match", emptyB:"Try removing a filter or a search word — every suggestion below has real results.",
+  foot:(d,n)=>REL?`Verified snapshot data from ${d} · ${n} listings, each individually checked against its live source on the snapshot date (official status endpoint or listing-page check, labeled per card). Eligibility notes summarize what the original posting stated; they are not a legal eligibility determination. Saved lists and notes stay in this browser only — nothing leaves your device. `:PVM?`Snapshot data from ${d} · ${n} listings collected from established public job APIs; ${VERN} listing-verified, the rest fetched but not yet verified. Eligibility notes summarize what the original posting stated; they are not a legal eligibility determination. Saved lists and notes stay in this browser only — nothing leaves your device. `:`Verified snapshot data from ${d} · ${n} listings, each checked by hand at capture time and never re-verified since. Eligibility notes summarize what the original posting stated; they are not a legal eligibility determination. Saved lists and notes stay in this browser only — nothing leaves your device. `,
+  sugKind:{Role:"Role",City:"City",Company:"Company"},
+  regions:{"Egypt":"Egypt","UAE":"UAE","Saudi Arabia":"Saudi Arabia","Other Gulf":"Other Gulf","USA":"USA","USA & Canada":"USA & Canada","Europe":"Europe","Worldwide":"Remote world","Other":"Other"}
+},
+ar:{
+  skip:"انتقل للوظائف", theme:"المظهر", lang:"اللغة", sub:REL?(SITE.sub_ar_rel||SITE.sub_ar):PVM?(SITE.sub_ar_pvm||SITE.sub_ar):SITE.sub_ar,
+  snapshot:d=>REL?`لقطة بتاريخ \u2066${d}\u2069 · (UTC). كل إعلان اتراجع مقابل مصدره الحي في تاريخ اللقطة — إما عبر نقطة الحالة الرسمية أو بفحص صفحة الإعلان، والطريقة موضحة على كل كارت؛ وممكن الإعلانات اتغيرت أو اتقفلت بعدها. زر التقديم يفتح الإعلان الأصلي.`:PVM?`لقطة بتاريخ \u2066${d}\u2069 · (UTC). متجمّعة من واجهات برمجية عامة موثقة المصدر؛ ممكن الإعلانات اتغيرت أو اتقفلت بعدها. كل كارت يوضح حالة التحقق الخاصة به.`:`لقطة بتاريخ \u2066${d}\u2069 · (UTC). دي لقطة مؤرخة وشغل تحت التطوير: ممكن الإعلانات اتغيرت أو اتقفلت بعدها. التوفر لم يُعَد التحقق منه مقابل المصادر الحية.`,
+  searchPh:"دوّر بالمسمى أو الشركة أو المدينة…", where:"المكان", type:"نوع العمل", place:"نظام العمل", sort:"ترتيب",
+  all:"الكل", clear:"مسح الفلاتر", csv:"تصدير CSV",
+  sorts:{recent:"الأحدث نشرًا",oldest:"الأقدم نشرًا",intern:"التدريبات أولًا",comp:"الأقل منافسة"},
+  lists:{all:"كل الوظائف",saved:"المحفوظة",applied:"قُدِّم عليها",hidden:"المخفية"},
+  count:(n,t)=>REL?`بنعرض ${n} من ${t} إعلان موثق`:PVM?`بنعرض ${n} من ${t} إعلان في اللقطة · ${VERN} موثق فعليًا`:`بنعرض ${n} من ${t} إعلان موثق في اللقطة`,
+  archive:n=>`${n} إعلان اتبلغ عنه كمغلق بعد اللقطة (محفوظ للسجل، ومش محسوب في الأعداد)`, arcMatch:n=>`${n} مطابق للفلاتر الحالية`,
+  internships:n=>`${n} تدريب في اللقطة دي`,
+  workplace:"نظام العمل", jtype:"النوع", seniority:"المستوى", posted:"النشر", first:"أول رصد",
+  open:p=>`قدّم على ${p}`, avail:"التوفر غير متحقق منه", availDead:"الرابط اتبلغ عنه كمغلق في ٢١ نوفمبر ٢٠٢٦ — تأكد قبل التقديم",
+  save:"احفظ", saved:"محفوظة", applied:"علّم كمُقدَّم", appliedOn:"تم التقديم", hide:"إخفاء", hidden:"مخفية", note:"ملاحظة",
+  notePh:"ملاحظة خاصة — بتتحفظ في المتصفح ده بس",
+  badgeNew:"جديد عن آخر لقطة منشورة", badgeOld:"موجود في آخر لقطة منشورة", deadTag:"رابط مغلق",
+  remote:"عن بُعد عالمي", notStated:"انظر الإعلان",
+  emptyT:"مفيش نتايج مطابقة", emptyB:"جرّب تشيل فلتر أو كلمة بحث — كل اقتراح تحته ليه نتايج حقيقية.",
+  foot:(d,n)=>REL?`بيانات موثقة بتاريخ \u2066${d}\u2069 · ${n} إعلان، كل واحد اتراجع مقابل مصدره الحي في تاريخ اللقطة (نقطة حالة رسمية أو فحص صفحة، والطريقة موضحة على الكارت). ملاحظات الأهلية بتلخص اللي الإعلان الأصلي ذكره؛ ومش حكم قانوني على الأهلية. القوائم المحفوظة والملاحظات بتفضل في متصفحك بس. `:PVM?`بيانات لقطة بتاريخ ${d} · ${n} إعلان متجمّع من واجهات برمجية عامة موثقة المصدر؛ ${VERN} منها متحقق على مستوى الإعلان، والباقي جُلب ولم يُتحقق منه بعد. ملاحظات الأهلية تلخص ما ورد في الإعلان الأصلي وليست فتوى أهلية. المحفوظات والملاحظات تبقى في هذا المتصفح فقط — لا شيء يغادر جهازك. `:`بيانات لقطة موثقة من ${d} · ${n} إعلان، كل واحد اتراجع يدويًا وقت الرصد ولم يُعَد التحقق منه من ساعتها. ملاحظات الأهلية بتلخص اللي الإعلان الأصلي ذكره، ومش حكم قانوني على الأهلية. القوائم المحفوظة والملاحظات بتفضل في المتصفح ده بس — مفيش حاجة بتسيب جهازك. `,
+  sugKind:{Role:"مسمى",City:"مدينة",Company:"شركة"},
+  regions:{"Egypt":"مصر","UAE":"الإمارات","Saudi Arabia":"السعودية","Other Gulf":"خليجي آخر","USA":"أمريكا","USA & Canada":"أمريكا وكندا","Europe":"أوروبا","Worldwide":"عن بُعد عالمي","Other":"أخرى"}
+}};
+const REGORD = ["Egypt","UAE","Saudi Arabia","Other Gulf","USA","USA & Canada","Europe","Worldwide","Other"];
+const TYPORD = ["Full-time","Part-time","Contract","Internship","Temporary","Volunteer","Apprenticeship","Not stated"];
+const PLCORD = ["Remote","Hybrid","Onsite","Not stated"];
+const LSKEY = "ci-state-" + SITE.key + "-v1";
+const LANGKEY = "ci-lang-v1";
+const THEMEKEY = "ci-theme-v2";
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const stated = (v, t) => (v && v !== "Not stated") ? v : t.notStated;
+/* Arabic display labels for English source values (filter chips, card meta, eligibility). Values themselves stay English in data. */
+const VALS = { "Full-time":"دوام كامل", "Part-time":"دوام جزئي", "Contract":"عقد", "Internship":"تدريب", "Temporary":"مؤقت", "Volunteer":"تطوع", "Apprenticeship":"تلمذة مهنية", "Not stated":"غير محدد", "Remote":"عن بُعد", "Hybrid":"هجين", "Onsite":"من المقر", "Entry level":"مستوى مبتدئ", "Mid-Senior level":"متوسط-أول", "Associate":"مشارك", "Not Applicable":"غير منطبق", "Executive":"تنفيذي", "Director":"مدير", "Yes":"نعم", "No":"لا", "Unknown":"غير معروف", "See posting":"انظر الإعلان" };
+const tv = v => lang === "ar" ? (VALS[v] || v) : v;
+function platformOf(url){
+  let h = ""; try { h = new URL(url).hostname.toLowerCase(); } catch(e){}
+  for (const p of ["linkedin","bayt","forasna","jobicy","arbeitnow","remotive","naukrigulf","indeed","wuzzuf"])
+    if (h.includes(p + ".")) return p === "naukrigulf" ? "NaukriGulf" : p[0].toUpperCase() + p.slice(1);
+  return "Company site";
+}
+const safeUrl = u => /^https:\/\//i.test(String(u || "")) ? u : null;
+
+/* state */
+let state = { saved:{}, applied:{}, hidden:{}, notes:{} };
+try { const s = JSON.parse(localStorage.getItem(LSKEY)); if (s && typeof s === "object") state = Object.assign(state, s); } catch(e){}
+const persist = () => { try { localStorage.setItem(LSKEY, JSON.stringify(state)); } catch(e){} };
+/* one-time preserving migration from the previous build's store (ci-jobstate-v1:<site>, shape {jobs:{id:{saved,applied,hidden,note}}}).
+   Runs only when the new key is absent, copies values (ISO timestamps kept as truthy flags), never deletes or overwrites the old key. */
+try {
+  if (!localStorage.getItem(LSKEY)) {
+    const old = JSON.parse(localStorage.getItem("ci-jobstate-v1:" + SITE.key) || "null");
+    if (old && old.jobs && typeof old.jobs === "object") {
+      let moved = 0;
+      for (const [id, s] of Object.entries(old.jobs)) {
+        if (!s || typeof s !== "object") continue;
+        if (s.saved) { state.saved[id] = s.saved; moved++; }
+        if (s.applied) { state.applied[id] = s.applied; moved++; }
+        if (s.hidden) { state.hidden[id] = s.hidden; moved++; }
+        if (s.note) { state.notes[id] = String(s.note); moved++; }
+      }
+      if (moved) persist();
+    }
+  }
+} catch(e){}
+let lang = localStorage.getItem(LANGKEY) === "ar" ? "ar" : "en";
+let theme = localStorage.getItem(THEMEKEY);
+if (!["light","dark","graphite","navy"].includes(theme)) theme = "dark";
+let f = { q:"", region:"all", type:"all", place:"all", sort:"recent", list:"all" };
+
+function applyTheme(){
+  document.documentElement.dataset.theme = theme;
+  document.documentElement.style.setProperty("--hue", SITE.hue);
+  document.querySelectorAll(".sw").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.t === theme)));
+  localStorage.setItem(THEMEKEY, theme);
+}
+function applyLang(){
+  const t = I18N[lang];
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  document.title = lang === "ar" ? SITE.title_ar : SITE.title_en;
+  $("h1").textContent = document.title;
+  $("brand").textContent = SITE["brand_" + lang];
+  $("skip").textContent = t.skip;
+  $("theme-lbl").textContent = t.theme;
+  $("lang-lbl").textContent = t.lang;
+  $("sub").textContent = t.sub;
+  $("snap").innerHTML = esc(t.snapshot(DATA.date));
+  $("q").placeholder = t.searchPh;
+  $("q").setAttribute("aria-label", t.searchPh);
+  $("l-where").textContent = t.where; $("l-type").textContent = t.type;
+  $("l-place").textContent = t.place; $("l-sort").textContent = t.sort;
+  $("reset").textContent = t.clear; $("csv").textContent = t.csv;
+  $("foot").innerHTML = "<b>" + esc(SITE["brand_" + lang]) + "</b> — " + esc(t.foot(DATA.date, JOBS.length));
+  document.querySelectorAll("#langseg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.l === lang)));
+  localStorage.setItem(LANGKEY, lang);
+  const sn = $("sites");
+  if (sn && !sn.children.length) SITENAV.forEach(([key, en, ar, url]) => {
+    const a = document.createElement("a");
+    a.href = url; a.className = "site-link" + (key === SITE.key ? " cur" : "");
+    a.dataset.key = key; a.dataset.en = en; a.dataset.ar = ar;
+    if (key === SITE.key) a.setAttribute("aria-current", "page");
+    sn.appendChild(a);
+  });
+  sn.querySelectorAll("a").forEach(a => a.textContent = lang === "ar" ? a.dataset.ar : a.dataset.en);
+  renderBreaks(); renderFilters(); render();
+}
+
+/* filtering */
+const hay = j => [j.title, j.company, j.location, j.region, j.workplace, j.type, j.source].join(" ").toLowerCase();
+function matchQ(j, q){
+  const ws = q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if (!ws.length) return true;
+  const h = hay(j);
+  return ws.every(w => h.includes(w));
+}
+function matchF(j){
+  return matchQ(j, f.q) &&
+    (f.region === "all" || j.region === f.region) &&
+    (f.type === "all" || j.type === f.type) &&
+    (f.place === "all" || j.workplace === f.place);
+}
+function visible(){
+  let v = JOBS.filter(matchF);
+  if (f.list === "saved") v = v.filter(j => state.saved[j.id]);
+  else if (f.list === "applied") v = v.filter(j => state.applied[j.id]);
+  else if (f.list === "hidden") v = v.filter(j => state.hidden[j.id]);
+  else v = v.filter(j => !state.hidden[j.id]);
+  const byDate = (a,b) => (Date.parse(b.posted||b.first_seen)||0) - (Date.parse(a.posted||a.first_seen)||0);
+  if (f.sort === "recent") v.sort(byDate);
+  else if (f.sort === "oldest") v.sort((a,b) => -byDate(a,b));
+  else if (f.sort === "intern") v.sort((a,b) => (b.type==="Internship") - (a.type==="Internship") || byDate(a,b));
+  else if (f.sort === "comp") v.sort((a,b) => ((parseInt(a.applicants)||9999) - (parseInt(b.applicants)||9999)) || byDate(a,b));
+  return v;
+}
+
+/* filter chips */
+function chip(label, pressed, onclick, count){
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "chip"; b.setAttribute("aria-pressed", String(pressed));
+  b.innerHTML = esc(label) + (count != null ? ` <span class="c">${count}</span>` : "");
+  b.onclick = onclick;
+  return b;
+}
+function renderFilters(){
+  const t = I18N[lang];
+  const reg = $("f-region"); reg.innerHTML = "";
+  reg.appendChild(chip(t.all, f.region === "all", () => { f.region = "all"; renderFilters(); render(); }));
+  REGORD.filter(r => JOBS.some(j => j.region === r)).forEach(r => {
+    const n = JOBS.filter(j => j.region === r).length;
+    reg.appendChild(chip(t.regions[r] || r, f.region === r, () => { f.region = r; renderFilters(); render(); }, n));
+  });
+  const ty = $("f-type"); ty.innerHTML = "";
+  ty.appendChild(chip(t.all, f.type === "all", () => { f.type = "all"; renderFilters(); render(); }));
+  TYPORD.filter(x => JOBS.some(j => j.type === x)).forEach(x => {
+    ty.appendChild(chip(tv(x), f.type === x, () => { f.type = x; renderFilters(); render(); }));
+  });
+  const pl = $("f-place"); pl.innerHTML = "";
+  pl.appendChild(chip(t.all, f.place === "all", () => { f.place = "all"; renderFilters(); render(); }));
+  PLCORD.filter(x => JOBS.some(j => j.workplace === x)).forEach(x => {
+    const lbl = tv(x);
+    pl.appendChild(chip(lbl, f.place === x, () => { f.place = x; renderFilters(); render(); }));
+  });
+  const so = $("f-sort"); so.innerHTML = "";
+  for (const k of ["recent","oldest","intern","comp"])
+    so.appendChild(chip(t.sorts[k], f.sort === k, () => { f.sort = k; renderFilters(); render(); }));
+  const li = $("f-list"); li.innerHTML = "";
+  const counts = { saved:Object.keys(state.saved).length, applied:Object.keys(state.applied).length, hidden:Object.keys(state.hidden).length };
+  li.appendChild(chip(t.lists.all, f.list === "all", () => { f.list = "all"; renderFilters(); render(); }));
+  li.appendChild(chip(t.lists.saved, f.list === "saved", () => { f.list = "saved"; renderFilters(); render(); }, counts.saved || null));
+  li.appendChild(chip(t.lists.applied, f.list === "applied", () => { f.list = "applied"; renderFilters(); render(); }, counts.applied || null));
+  li.appendChild(chip(t.lists.hidden, f.list === "hidden", () => { f.list = "hidden"; renderFilters(); render(); }, counts.hidden || null));
+}
+
+/* suggestions */
+const ROLE_WORDS = SITE.roles;
+function buildSug(){
+  const out = [];
+  ROLE_WORDS.forEach(w => { const n = JOBS.filter(j => matchQ(j, w)).length; if (n) out.push({ text:w, kind:"Role", n }); });
+  const cities = new Map(), cos = new Map();
+  JOBS.forEach(j => {
+    const c = (j.location || "").split(",")[0].trim(); if (c) cities.set(c, (cities.get(c)||0)+1);
+    const co = (j.company || "").trim().replace(/\.$/, ""); if (co) cos.set(co, (cos.get(co)||0)+1);
+  });
+  [...cities.entries()].sort((a,b)=>b[1]-a[1]).slice(0,10).forEach(([c]) => { const n = JOBS.filter(j=>matchQ(j,c)).length; if (n) out.push({ text:c, kind:"City", n }); });
+  [...cos.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,10).forEach(([c]) => { const n = JOBS.filter(j=>matchQ(j,c)).length; if (n) out.push({ text:c, kind:"Company", n }); });
+  return out;
+}
+let SUG = [];
+let sugIdx = -1;
+function renderSug(list){
+  const t = I18N[lang], s = $("sug");
+  s.innerHTML = ""; sugIdx = -1; $("q").removeAttribute("aria-activedescendant");
+  list.slice(0,9).forEach((x, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.setAttribute("role","option"); b.id = "sug-opt-" + i; b.setAttribute("aria-selected","false");
+    b.innerHTML = `<span>${esc(x.text)}</span><span class="k">${esc(t.sugKind[x.kind])}</span><span class="n">${x.n}</span>`;
+    b.onclick = () => { $("q").value = x.text; f.q = x.text; closeSug(); render(); };
+    s.appendChild(b);
+  });
+}
+function sugMove(d){
+  const opts = $("sug").querySelectorAll("[role=option]");
+  if (!opts.length) return;
+  sugIdx = (sugIdx + d + opts.length) % opts.length;
+  opts.forEach((o, i) => { const on = i === sugIdx; o.classList.toggle("hl", on); o.setAttribute("aria-selected", on ? "true" : "false"); });
+  $("q").setAttribute("aria-activedescendant", "sug-opt-" + sugIdx);
+  opts[sugIdx].scrollIntoView({ block: "nearest" });
+}
+function openSug(){ $("sug").classList.add("open"); $("q").setAttribute("aria-expanded","true"); }
+function closeSug(){ $("sug").classList.remove("open"); $("q").setAttribute("aria-expanded","false"); }
+
+/* cards */
+let io = null;
+function card(j, n){
+  const t = I18N[lang];
+  const el = document.createElement("article");
+  el.className = "job";
+  const isNew = REL ? j.new_vs_baseline === true : j.status === "new_update";
+  const dead = j.link_status && String(j.link_status).startsWith("dead");
+  const url = safeUrl(j.url);
+  const initials = (j.company || "?").trim().replace(/\.$/,"").split(/\s+/).map(w=>w[0]).join("").slice(0,2).toUpperCase();
+  el.innerHTML = `
+    <div class="job-top">
+      <span class="job-n">${n}</span>
+      <span class="tag">${esc(t.regions[j.region] || j.region)}</span>
+      <span class="badge ${isNew ? "new" : "old"}">${isNew ? esc(t.badgeNew) : esc(t.badgeOld)}</span>
+      ${dead ? `<span class="badge dead">${esc(t.deadTag)}</span>` : ""}
+      <span class="job-src">${esc(j.source === "Company careers" ? "Company site" : j.source)}</span>
+    </div>
+    <h3>${esc(j.title)}</h3>
+    <div class="co"><span class="av" aria-hidden="true">${esc(initials)}</span><span>${esc((j.company||"").replace(/\.$/,""))} · ${esc(j.location || "")}</span></div>
+    <div class="specs">
+      <div class="spec"><div class="k">${esc(t.workplace)}</div><div class="v">${esc(tv(stated(j.workplace, t)))}</div></div>
+      <div class="spec"><div class="k">${esc(t.jtype)}</div><div class="v">${esc(tv(stated(j.type, t)))}</div></div>
+      <div class="spec"><div class="k">${esc(t.seniority)}</div><div class="v">${esc(tv(j.level || "—"))}</div></div>
+    </div>
+    <div class="dates"><span>${esc(t.posted)}: <b><bdi>${esc(j.posted || "—")}</bdi></b></span><span>${esc(t.first)}: <b><bdi>${esc(j.first_seen || "—")}</bdi></b></span>${j.applicants ? `<span>${esc(lang==="ar"?"متقدم":"Applicants")}: <b>${esc(j.applicants)}</b></span>` : ""}</div>
+    ${j.note ? `<div class="note"><b>${esc(lang==="ar"?"تنبيه من الإعلان":"Check the posting")}</b>${esc(j.note)}</div>` : ""}
+    ${j.elig ? `<div class="elig"><b>${esc(lang==="ar"?"الأهلية:":"Eligibility:")}</b> ${esc(tv(typeof j.elig === "string" ? j.elig : (j.elig[lang] || j.elig.en || "")))}</div>` : ""}
+    <div class="actions">
+      ${url ? `<a class="apply" href="${esc(url)}" target="_blank" rel="noopener noreferrer nofollow">${esc(t.open(platformOf(j.url)))} <span class="ext">↗</span></a>` : ""}
+      <span class="avail">${esc(dead ? t.availDead : (REL ? (lang==="ar" ? (j.vlabel_ar||j.vlabel||t.avail) : (j.vlabel||t.avail)) : t.avail))}</span>
+    </div>
+    <div class="mini">
+      <button type="button" data-a="save" class="${state.saved[j.id] ? "on" : ""}">${state.saved[j.id] ? esc(t.saved) : esc(t.save)}</button>
+      <button type="button" data-a="applied" class="${state.applied[j.id] ? "on" : ""}">${state.applied[j.id] ? esc(t.appliedOn) : esc(t.applied)}</button>
+      <button type="button" data-a="hide">${state.hidden[j.id] ? esc(t.hidden) : esc(t.hide)}</button>
+      <button type="button" data-a="note">${esc(t.note)}</button>
+    </div>
+    <div class="notes" hidden><textarea aria-label="${esc(t.note)}" placeholder="${esc(t.notePh)}">${esc(state.notes[j.id] || "")}</textarea></div>`;
+  el.querySelector('[data-a="save"]').onclick = () => { state.saved[j.id] ? delete state.saved[j.id] : state.saved[j.id] = 1; persist(); renderFilters(); render(); };
+  el.querySelector('[data-a="applied"]').onclick = () => { state.applied[j.id] ? delete state.applied[j.id] : state.applied[j.id] = 1; persist(); renderFilters(); render(); };
+  el.querySelector('[data-a="hide"]').onclick = () => { state.hidden[j.id] ? delete state.hidden[j.id] : state.hidden[j.id] = 1; persist(); renderFilters(); render(); };
+  const nw = el.querySelector(".notes");
+  el.querySelector('[data-a="note"]').onclick = () => { nw.hidden = !nw.hidden; if (!nw.hidden) nw.querySelector("textarea").focus(); };
+  nw.querySelector("textarea").oninput = e => { state.notes[j.id] = e.target.value; persist(); };
+  return el;
+}
+function render(){
+  const t = I18N[lang];
+  const v = visible();
+  const g = $("grid");
+  g.innerHTML = "";
+  if (!v.length){
+    g.innerHTML = `<div class="empty"><div class="big">🔎</div><h2>${esc(t.emptyT)}</h2><p>${esc(t.emptyB)}</p></div>`;
+  } else {
+    const frag = document.createDocumentFragment();
+    v.forEach((j, i) => frag.appendChild(card(j, i + 1)));
+    g.appendChild(frag);
+    if (io) io.disconnect();
+    io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } }), { rootMargin:"0px 0px -8% 0px", threshold:.05 });
+    g.querySelectorAll(".job").forEach((el, i) => { el.style.transitionDelay = Math.min(i * 35, 350) + "ms"; io.observe(el); });
+  }
+  const intern = JOBS.filter(j => j.type === "Internship").length;
+  $("count").innerHTML = `<b>${v.length}</b> / ${JOBS.length} · ${esc(t.internships(intern))}`;
+  const arc = $("archive");
+  if (ARCHIVED.length){
+    arc.hidden = false;
+    const va = ARCHIVED.filter(matchF);
+    $("archive-sum").textContent = t.archive(ARCHIVED.length) + (va.length !== ARCHIVED.length ? " · " + t.arcMatch(va.length) : "");
+    const ag = $("archive-grid");
+    ag.innerHTML = "";
+    va.forEach((j, i) => ag.appendChild(card(j, "A" + (i + 1))));
+  }
+}
+
+/* breakdown */
+function renderBreaks(){
+  const t = I18N[lang];
+  const b = $("breaks");
+  b.innerHTML = "";
+  const groups = [[lang==="ar"?"مصر":"Egypt", r => r === "Egypt"], [lang==="ar"?"الخليج":"Gulf", r => ["UAE","Saudi Arabia","Other Gulf"].includes(r)], [lang==="ar"?"أمريكا وأوروبا":"US & Europe", r => ["USA","USA & Canada","Europe"].includes(r)], [t.remote, r => r === "Worldwide"]];
+  groups.forEach(([lbl, fn]) => {
+    const n = JOBS.filter(j => fn(j.region)).length;
+    if (!n) return;
+    const s = document.createElement("span");
+    s.className = "bchip";
+    s.innerHTML = `<b data-n="${n}">0</b><span>${esc(lbl)}</span>`;
+    b.appendChild(s);
+  });
+  const tot = document.createElement("span");
+  tot.className = "bchip";
+  if(REL){const ep=JOBS.filter(j=>j.verification_method==="jobicy_status_endpoint").length, bc=JOBS.filter(j=>j.verification_method==="bounded_content_check").length, br=JOBS.filter(j=>j.verification_method==="browser_page_check").length, unk=JOBS.length-ep-bc-br;
+  const mTxt=(n,ar,en)=>n>0?` · ${n} ${lang==="ar"?ar:en}`:"";
+  tot.innerHTML = `<b data-n="${JOBS.length}">0</b><span>${esc((lang==="ar"?"إجمالي":"total")+mTxt(ep,"عبر نقطة الحالة الرسمية","status-endpoint")+mTxt(bc,"بفحص نص الإعلان آليًا","listing-checked")+mTxt(br,"بمراجعة متصفح يدوية","browser-reviewed")+mTxt(unk,"بمنهج تحقق غير معروف","unknown-method"))}</span>`;
+ } else tot.innerHTML = PVM ? `<b data-n="${VERN}">0</b><span>${esc(lang==="ar"?"موثق فعليًا":"listing-verified")}</span>` : `<b data-n="${JOBS.length}">0</b><span>${esc(lang==="ar"?"إجمالي موثق":"total verified")}</span>`;
+  b.appendChild(tot);
+  if (PVM && JOBS.length - VERN > 0){
+    const pend = document.createElement("span");
+    pend.className = "bchip";
+    pend.innerHTML = `<b data-n="${JOBS.length - VERN}">0</b><span>${esc(lang==="ar"?"بانتظار التوثيق":"awaiting verification")}</span>`;
+    b.appendChild(pend);
+  }
+}
+function animateCounts(){
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches){ document.querySelectorAll("[data-n]").forEach(e => e.textContent = e.dataset.n); return; }
+  document.querySelectorAll("[data-n]").forEach(e => {
+    const target = +e.dataset.n, t0 = performance.now();
+    const step = now => { const p = Math.min((now - t0) / 750, 1); e.textContent = Math.round(target * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  });
+}
+
+/* csv */
+function csv(){
+  const v = visible();
+  const rows = [["title","company","location","region","workplace","type","posted","first_seen","source","url","availability"]];
+  v.forEach(j => rows.push([j.title,(j.company||"").replace(/\.$/,""),j.location,j.region,j.workplace,j.type,j.posted||"",j.first_seen||"",j.source,j.url, j.link_status ? "reported closed 2026-11-21" : (j.vlabel || "not verified")]));
+  const text = rows.map(r => r.map(x => `"${String(x ?? "").replace(/"/g,'""')}"`).join(",")).join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["﻿" + text], { type:"text/csv;charset=utf-8" }));
+  a.download = SITE.key + "-jobs-" + DATA.date + ".csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* wiring */
+function init(){
+  const sw = $("swatches");
+  [["light","Light"],["dark","Dark"],["graphite","Graphite"],["navy","Navy"]].forEach(([k, lbl]) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "sw"; b.dataset.t = k; b.title = lbl; b.setAttribute("aria-label", lbl + " theme");
+    b.onclick = () => { theme = k; applyTheme(); };
+    sw.appendChild(b);
+  });
+  document.querySelectorAll("#langseg button").forEach(b => b.onclick = () => { lang = b.dataset.l; applyLang(); document.querySelectorAll("[data-n]").forEach(e => e.textContent = e.dataset.n); });
+  $("reset").onclick = () => { f = { q:"", region:"all", type:"all", place:"all", sort:"recent", list:"all" }; $("q").value = ""; renderFilters(); render(); };
+  $("csv").onclick = csv;
+  const q = $("q");
+  q.addEventListener("input", () => {
+    f.q = q.value;
+    const v = q.value.trim().toLowerCase();
+    renderSug(v ? SUG.filter(x => x.text.toLowerCase().includes(v)) : SUG);
+    openSug();
+    render();
+  });
+  q.addEventListener("focus", () => { renderSug(q.value.trim() ? SUG.filter(x => x.text.toLowerCase().includes(q.value.trim().toLowerCase())) : SUG); if ($("sug").children.length) openSug(); });
+  q.addEventListener("keydown", e => {
+    if (e.key === "Escape") { closeSug(); return; }
+    if (!$("sug").classList.contains("open")) return;
+    if (e.key === "ArrowDown") { e.preventDefault(); sugMove(1); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); sugMove(-1); }
+    else if (e.key === "Enter" && sugIdx >= 0) { e.preventDefault(); const o = $("sug").querySelectorAll("[role=option]")[sugIdx]; if (o) o.click(); }
+  });
+  document.addEventListener("click", e => { if (!e.target.closest(".search-zone")) closeSug(); });
+  SUG = buildSug();
+  applyTheme(); renderBreaks(); applyLang(); animateCounts();
+  const ro = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ e.target.classList.add("in"); ro.unobserve(e.target); } }), { threshold:.05 });
+  document.querySelectorAll(".reveal").forEach(el => ro.observe(el));
+}
+init();
+</script>
+</body>
+</html>
