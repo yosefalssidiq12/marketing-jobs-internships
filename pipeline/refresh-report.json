@@ -1,12 +1,14 @@
 {
  "site": "marketing",
- "run_at": "2026-11-22T03:29:57.720159+00:00",
+ "run_at": "2026-11-22T05:46:23.776020+00:00",
  "dry_run": false,
  "fresh_verified": {
   "jobicy_status_endpoint": 26,
-  "bounded_content_check": 4
+  "bounded_content_check": 3
  },
  "carried": [
+  "social-content-manager-jellyfish-social-content-manager-berlin-261563",
+  "social-media-manager-videograf-m-w-d-vollzeit-ekin-immobilie-social-media-manager-videogra",
   "social-media-e-mail-marketing-manager-m-w-d-fokus-klettern-b-social-media-e-mail-marketing",
   "senior-data-scientist-marketing-dsa-vinteden-senior-data-scientist-marketing-dsa-berlin-48",
   "senior-product-marketing-manager-emea-camunda-remote-senior-product-marketing-manager-emea",
@@ -18,17 +20,17 @@
  "errors": [],
  "prev_jobicy_status_checked": 1,
  "counts": {
-  "publishable": 35,
+  "publishable": 36,
   "prev": 35,
-  "fresh": 30,
-  "carried": 5,
+  "fresh": 29,
+  "carried": 7,
   "archived": 0,
   "excluded": 0
  },
  "fresh_verified_by_source": {
   "arbeitnow": {
-   "eligible": 156,
-   "fresh_success": 21
+   "eligible": 162,
+   "fresh_success": 24
   }
  },
  "publication_gate": {
@@ -45,9 +47,9 @@
    ]
   },
   "source_counts": {
-   "jobicy": 356,
-   "arbeitnow": 840
+   "jobicy": 351,
+   "arbeitnow": 859
   }
  },
- "build_sha256_16": "af07945d2af97886"
+ "build_sha256_16": "45de87afcec8e96d"
 }
