@@ -1,6 +1,6 @@
 {
  "site": "marketing",
- "run_at": "2026-11-22T02:58:41.468273+00:00",
+ "run_at": "2026-11-22T03:28:06.191827+00:00",
  "dry_run": false,
  "fresh_verified": {
   "jobicy_status_endpoint": 26,
@@ -27,7 +27,7 @@
  },
  "fresh_verified_by_source": {
   "arbeitnow": {
-   "eligible": 158,
+   "eligible": 156,
    "fresh_success": 21
   }
  },
@@ -46,8 +46,8 @@
   },
   "source_counts": {
    "jobicy": 356,
-   "arbeitnow": 868
+   "arbeitnow": 840
   }
  },
- "build_sha256_16": "272c74718e8d4de5"
+ "build_sha256_16": "cb1e292b827a920a"
 }
