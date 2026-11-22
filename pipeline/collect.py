@@ -9,7 +9,7 @@ Pipeline order: collect.py -> classify.py -> verify.py (verify.py is the ONLY wr
   keep also_on / url_variants / location_variants. No silent drops.
 - Freshness gate: EXPERIMENTAL parameter, archive-not-delete.
 Local build/test only: no publish, no schedule, no DB."""
-import json, re, time, hashlib, urllib.request, urllib.parse, datetime, sys, os
+import json, re, time, hashlib, html, html.parser, urllib.request, urllib.parse, datetime, sys, os
 
 OUT = os.path.dirname(os.path.abspath(__file__))
 STATE = os.path.join(OUT, "pipeline-state.json")
@@ -55,6 +55,51 @@ def clean_company(name):
 
 def norm_txt(s): return re.sub(r"[^a-z0-9\u00C0-\u024F]+", "", (s or "").lower())
 
+# Evidence-backed syndication aliases, source-qualified (F9). A new alias entry requires
+# verified evidence that the postings' bodies are identical and locations match; the merge
+# below re-checks body and location equality at runtime, so an alias alone never merges.
+# Aliases never rename the displayed company; they only let dedup recognize one employer
+# behind a feed's channel slug (Arbeitnow carries Artefact via its ATS feed "Artefactjobs"
+# and via LinkedIn syndication "Artefactlinkedin", the latter already display-cleaned to
+# "Artefact" by clean_company).
+SOURCE_COMPANY_ALIASES = {
+    "arbeitnow": {"artefactjobs": "artefact", "artefactlinkedin": "artefact"},
+}
+def alias_company(source, company):
+    n = norm_txt(company)
+    return SOURCE_COMPANY_ALIASES.get((source or "").lower(), {}).get(n, n)
+
+def body_proof(source, raw_desc):
+    """Full-body equivalence proof (F9): HTML entity decode + real HTML parsing (literal
+    text such as comparison operators <= / >= adjacent to tags is preserved, never
+    consumed as markup) + whitespace collapse over the ENTIRE body (no display
+    truncation), retaining meaningful Unicode and punctuation. An empty normalized
+    body yields NO proof (None): absence of body evidence is never substantive proof.
+    Source-qualified normalization: Arbeitnow injects a terminal footer with exactly
+    two observed variants (verified harmless on the Artefact pair 2026-11-22, fixtures
+    preserved): "Find more English Speaking Jobs in France on Arbeitnow" and
+    "Find Jobs in France on Arbeitnow". Only those two exact strings, at the very end,
+    are stripped, only for arbeitnow records."""
+    s = html.unescape(raw_desc or "")
+    try:
+        parser = html.parser.HTMLParser()
+        parts = []
+        parser.handle_data = parts.append
+        parser.feed(s)
+        parser.close()
+        s = " ".join(parts)
+    except Exception:
+        return None  # parse failure is no proof: alias rows stay separate (never merge on lossy fallback)
+    s = re.sub(r"\s+", " ", s).strip()
+    if (source or "").lower() == "arbeitnow":
+        s = re.sub(r"\s*Find (?:more English Speaking )?Jobs in France on Arbeitnow\.?\s*$", "", s, flags=re.I)
+    if not s:
+        return None
+    return hashlib.sha256(s.encode("utf-8")).hexdigest()
+
+DEDUP_LOSERS = []  # explicit identities of merged-away records; refresh.py archives them
+                   # with a duplicate-of reason instead of letting same-day grace carry them back.
+
 GENERIC_LOC = {"remote", "anywhere", "worldwide", "global", "emea", "eu", "europe", ""}
 def loc_tokens(loc):
     return {t for t in re.findall(r"[a-z\u00C0-\u024F]{3,}", (loc or "").lower())} - GENERIC_LOC
@@ -75,6 +120,7 @@ def add(source, source_id, title, company, url, posted, desc, loc, jtype):
         "verified_this_run": None,
         "location": (loc or "").strip(), "type_raw": (jtype or "").strip(),
         "desc": re.sub(r"<[^>]+>", " ", desc or "")[:3000],
+        "desc_proof": body_proof(source, desc),
     })
 
 ERRORS = []  # per-source/scope collection errors; refresh.py fails closed on any entry
@@ -117,6 +163,7 @@ def fetch_all():
             ERRORS.append({"source": "arbeitnow", "scope": str(page), "error": type(e).__name__ + ": " + str(e)[:160]})
 
 def dedup(jobs):
+    DEDUP_LOSERS.clear()
     by_url = {}
     url_dupes = 0
     for j in jobs:
@@ -124,8 +171,54 @@ def dedup(jobs):
         else: by_url[j["url"]] = j
     merged, tc_dupes, guarded = [], 0, 0
     by_tc = {}
+    alias_idx = {}
+
+    def absorb(keep, j, via):
+        # merge j into keep; j's identity is preserved as an explicit dedup loser
+        keep.setdefault("also_on", [])
+        if j["source"] not in keep.get("also_on", []) and j["source"] != keep["source"]:
+            keep["also_on"].append(j["source"])
+        if j["url"] != keep["url"]:
+            keep.setdefault("url_variants", []).append(j["url"])
+        if j.get("location") and j["location"] != keep.get("location"):
+            keep.setdefault("location_variants", [])
+            if j["location"] not in keep["location_variants"]:
+                keep["location_variants"].append(j["location"])
+        DEDUP_LOSERS.append({"id": j["id"], "url": j["url"], "via": via,
+                             "source": j.get("source"), "source_id": j.get("source_id"),
+                             "duplicate_of": keep["id"], "survivor_url": keep["url"]})
+
     for j in by_url.values():
         k = norm_txt(j["title"]) + "|" + norm_txt(j["company"])
+        ka = (j.get("source") or "").lower() + "|" + norm_txt(j["title"]) + "|" + alias_company(j.get("source"), j["company"])
+        if k not in by_tc and ka in alias_idx:
+            # alias-path candidate: same employer behind a feed channel slug. Merge ONLY on
+            # posting equivalence: identical normalized location AND identical normalized body.
+            cand = by_tc[alias_idx[ka]]
+            same_loc = norm_txt(cand.get("location")) == norm_txt(j.get("location"))
+            p1, p2 = cand.get("desc_proof"), j.get("desc_proof")
+            same_desc = bool(p1) and p1 == p2
+            if same_loc and same_desc:
+                tc_dupes += 1
+                # deterministic survivor: the canonical (unaliased) employer record wins
+                # regardless of feed order; both original URLs are retained.
+                j_canonical = alias_company(j.get("source"), j["company"]) == norm_txt(j["company"])
+                cand_canonical = alias_company(cand.get("source"), cand["company"]) == norm_txt(cand["company"])
+                if j_canonical and not cand_canonical:
+                    preserved = {f: cand[f] for f in ("also_on", "url_variants", "location_variants") if f in cand}
+                    loser = dict(cand)
+                    cand.update(j)
+                    cand.update(preserved)
+                    absorb(cand, loser, "alias_posting_equivalence")
+                else:
+                    absorb(cand, j, "alias_posting_equivalence")
+                continue
+            # alias matched but equivalence failed: keep separate (never collapse unproven)
+            guarded += 1
+            merged.append(j)
+            by_tc.setdefault(k, j)
+            alias_idx.setdefault(ka, k)
+            continue
         if k in by_tc:
             keep = by_tc[k]
             if loc_conflict(keep.get("location"), j.get("location")):
@@ -134,18 +227,21 @@ def dedup(jobs):
                 merged.append(j)
                 continue
             tc_dupes += 1
-            keep.setdefault("also_on", [])
-            if j["source"] not in keep.get("also_on", []) and j["source"] != keep["source"]:
-                keep["also_on"].append(j["source"])
-            if j["url"] != keep["url"]:
-                keep.setdefault("url_variants", []).append(j["url"])
-            if j.get("location") and j["location"] != keep.get("location"):
-                keep.setdefault("location_variants", [])
-                if j["location"] not in keep["location_variants"]:
-                    keep["location_variants"].append(j["location"])
+            absorb(keep, j, "title_company")
         else:
             by_tc[k] = j
             merged.append(j)
+        alias_idx.setdefault(ka, k)
+    # resolve loser references to the FINAL survivor: with 3+ records an early loser can
+    # point at a record that itself became a loser when the canonical survivor arrived later
+    survivor_ids = {m2["id"] for m2 in merged}
+    loser_by_id = {l["id"]: l for l in DEDUP_LOSERS}
+    for l in DEDUP_LOSERS:
+        seen = set()
+        while l["duplicate_of"] in loser_by_id and l["duplicate_of"] not in survivor_ids and l["duplicate_of"] not in seen:
+            seen.add(l["duplicate_of"])
+            ref = loser_by_id[l["duplicate_of"]]
+            l["duplicate_of"], l["survivor_url"] = ref["duplicate_of"], ref["survivor_url"]
     return merged, url_dupes, tc_dupes, guarded
 
 def apply_freshness(jobs, now, days):
@@ -203,6 +299,7 @@ def main():
            "counts": {"raw": raw, "url_dupes_removed": url_dupes,
                       "title_company_dupes_merged": tc_dupes, "location_guard_kept_separate": guarded,
                       "active": len(active), "archived": len(archived)},
+           "dedup_losers": DEDUP_LOSERS,
            "errors": ERRORS,
            "jobs": active, "archived": archived}
     json.dump(out, open(os.path.join(OUT, "collected.json"), "w"), ensure_ascii=False, indent=1)
