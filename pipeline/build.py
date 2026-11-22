@@ -3,7 +3,8 @@
 Evolves the currently deployed static frontends (decision recorded 2026-11-21:
 keeps the existing single-file static architecture and integration contract;
 does not claim backend/pipeline execution)."""
-import json, pathlib
+import html as _html
+import json, os, pathlib, re
 
 ROOT = pathlib.Path(__file__).parent
 TEMPLATE = (ROOT / "template.html").read_text(encoding="utf-8")
@@ -73,22 +74,94 @@ VERCEL_JSON = {
     ]
 }
 
+# --- Shared rendering core (F8 build-safety fix, 2026-11-22) ---
+# Every placeholder with its REQUIRED occurrence count in the pristine template
+# and its output encoding. __DATA__ and __SITE_CONFIG__ embed JSON inside a
+# <script> block; the rest land in HTML text or double-quoted attribute
+# contexts (title/meta/brand appear multiple times by design - exact counts
+# below are the contract, so a missing OR duplicated token fails the build
+# before anything is written).
+RENDER_TOKENS = {
+    "__TITLE_EN__": (4, "html"),
+    "__META_DESC__": (3, "html"),
+    "__THEME_COLOR__": (1, "html"),
+    "__FAV_HUE__": (1, "html"),
+    "__PROD_URL__": (1, "html"),
+    "__BRAND_EN__": (1, "html"),
+    "__SITE_CONFIG__": (1, "json"),
+    "__DATA__": (1, "json"),
+}
+_RENDER_RE = re.compile("|".join(re.escape(t) for t in RENDER_TOKENS))
+
+
+def json_for_script(obj):
+    """JSON safe to embed inside a <script> block.
+
+    '<' becomes \<u003c so external text can never terminate the script
+    element; U+2028/U+2029 are escaped for classic-script parsing. JSON.parse
+    restores every string byte-for-byte, so page logic sees the original data.
+    """
+    return (json.dumps(obj, ensure_ascii=False)
+            .replace("<", "\\u003c")
+            .replace("\u2028", "\\u2028")
+            .replace("\u2029", "\\u2029"))
+
+
+def render_page(template, html_values, json_values):
+    """Validate the pristine template, then substitute every token in ONE pass.
+
+    - Token counts must match RENDER_TOKENS exactly, so a template edit that
+      drops or duplicates a required placeholder fails loudly instead of
+      silently shipping a page without its data.
+    - HTML-context values get full text/attribute escaping; JSON-context
+      values get script-safe JSON. Substituted content is never rescanned, so
+      a value literally containing a token string is left untouched.
+    Raises ValueError on any token-count mismatch (caller must not write).
+    """
+    bad = {t: template.count(t) for t, (want, _kind) in RENDER_TOKENS.items()
+           if template.count(t) != want}
+    if bad:
+        raise ValueError("template token mismatch (token: found occurrences): %r" % bad)
+    table = {}
+    for tok, (_want, kind) in RENDER_TOKENS.items():
+        if kind == "html":
+            table[tok] = _html.escape(str(html_values[tok]), quote=True)
+        else:
+            table[tok] = json_for_script(json_values[tok])
+    return _RENDER_RE.sub(lambda m: table[m.group(0)], template)
+
+
+def write_atomic(path, text):
+    """Write via a same-directory temp file + rename so a failure never
+    truncates or replaces the previously published file."""
+    path = pathlib.Path(path)
+    tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(text, encoding="utf-8")
+    os.replace(tmp, path)
+
+
+def html_values_for(cfg, sub_key):
+    return {
+        "__TITLE_EN__": cfg["title_en"],
+        "__META_DESC__": cfg[sub_key],
+        "__THEME_COLOR__": cfg["theme_color"],
+        "__FAV_HUE__": cfg["fav"],
+        "__PROD_URL__": cfg["prod_url"],
+        "__BRAND_EN__": cfg["brand_en"],
+    }
+
+
 def build(site):
     cfg = SITES[site]
     data = json.loads((ROOT / "data" / f"{site}.json").read_text(encoding="utf-8"))
-    out = TEMPLATE
-    out = out.replace("__TITLE_EN__", cfg["title_en"])
-    out = out.replace("__META_DESC__", cfg["sub_en"].replace('"', "'"))
-    out = out.replace("__THEME_COLOR__", cfg["theme_color"])
-    out = out.replace("__FAV_HUE__", cfg["fav"])
-    out = out.replace("__PROD_URL__", cfg["prod_url"])
-    out = out.replace("__BRAND_EN__", cfg["brand_en"])
-    out = out.replace("__SITE_CONFIG__", json.dumps(cfg, ensure_ascii=False))
-    out = out.replace("__DATA__", json.dumps(data, ensure_ascii=False))
+    # Render and validate EVERYTHING before touching the output directory.
+    out = render_page(TEMPLATE, html_values_for(cfg, "sub_en"),
+                      {"__SITE_CONFIG__": cfg, "__DATA__": data})
+    vercel = json.dumps(VERCEL_JSON, indent=2)
     dist = ROOT.parent / "dist" / cfg["repo"]
     dist.mkdir(parents=True, exist_ok=True)
-    (dist / "index.html").write_text(out, encoding="utf-8")
-    (dist / "vercel.json").write_text(json.dumps(VERCEL_JSON, indent=2), encoding="utf-8")
+    write_atomic(dist / "index.html", out)
+    write_atomic(dist / "vercel.json", vercel)
     print(f"built {cfg['repo']}: {len(data['jobs'])} records, {len(out)} bytes")
 
 if __name__ == "__main__":
