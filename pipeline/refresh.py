@@ -296,6 +296,24 @@ def main():
     jrows = [j for j in d["jobs"] if j.get("source") == "jobicy"]
     if jrows and not any(j.get("verified_this_run") is True for j in jrows):  # current-run success only; inherited timestamps never satisfy this
         breaches.append(f"jobicy status check yielded 0 active rows out of {len(jrows)} (endpoint outage or mass closure)")
+    # F5 (QA reviewer 2026-11-22): feed-level fresh-verification guard for every other ENABLED
+    # source with a nonempty verifier-eligible pool (same d.jobs/source/primary_site predicate
+    # as verify.py). Zero current-run successes is inconclusive (outage, bot block, or mass
+    # closure) and preserves the prior snapshot; it never means the rows closed. Carried rows
+    # never satisfy this: the pool is this run's fresh collection only, and verified_this_run
+    # is set only by verify.py in this run. No per-selected-site requirement: the content-check
+    # cap is shared across classified sites, so a per-site rule could fail on cap ordering alone.
+    report["fresh_verified_by_source"] = {}
+    for s in EXPECTED_SOURCES:
+        if s == "jobicy":
+            continue  # covered by the feed-level jobicy guard above
+        pool = [j for j in d["jobs"] if j.get("source") == s and j.get("primary_site")]
+        if not pool:
+            continue  # no eligible records for this source: nothing to require
+        ok_src = sum(1 for j in pool if j.get("verified_this_run") is True)
+        report["fresh_verified_by_source"][s] = {"eligible": len(pool), "fresh_success": ok_src}
+        if ok_src == 0:
+            breaches.append(f"{s} verification inconclusive: 0 fresh successes out of {len(pool)} eligible rows (outage, bot block, or mass closure - prior snapshot preserved)")
     if fresh_count == 0:
         breaches.append("verification outage: 0 rows freshly verified this run")
     if len(prev["jobs"]) >= 10 and len(jobs_out) < GATE_MIN_RATIO * len(prev["jobs"]):
