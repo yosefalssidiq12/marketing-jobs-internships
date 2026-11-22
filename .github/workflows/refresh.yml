@@ -1,0 +1,31 @@
+name: refresh
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '17 2 * * *'   # daily 04:17 Africa/Cairo (02:17 UTC); off-the-hour to spread load
+  push:
+    branches: ['refresh-*']   # branch rehearsal: a FULL real refresh that writes only to this branch (data-release/<site>.json, index.html, refresh-report.json, pipeline-state.json); production deploys only from main after merge. main never self-triggers
+permissions:
+  contents: write
+concurrency:
+  group: refresh-${{ github.repository }}
+  cancel-in-progress: false
+jobs:
+  refresh:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run refresh (collect, classify, verify, rebuild)
+        run: python3 pipeline/refresh.py --site "marketing" --repo-root .
+      - name: Commit if changed
+        run: |
+          git config user.name "career-refresh-bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # stage ONLY the intended outputs of an accepted run (never pipeline-state.json.next or collected.json)
+          git add index.html "pipeline/data-release/marketing.json" pipeline/pipeline-state.json pipeline/refresh-report.json
+          if git diff --cached --quiet; then echo "no changes"; else git commit -m "refresh: $(date -u +%Y-%m-%dT%H:%M:%SZ)" && git push; fi
