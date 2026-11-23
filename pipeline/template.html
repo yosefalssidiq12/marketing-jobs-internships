@@ -105,15 +105,15 @@ header.bar{position:sticky; top:0; z-index:20; backdrop-filter:blur(14px); -webk
   padding:6px 12px; border-radius:999px; cursor:pointer; transition:all .22s var(--ease)}
 .seg button:hover{color:var(--text)}
 .seg button[aria-pressed="true"]{background:linear-gradient(135deg,var(--accent-cta),var(--accent-cta2)); color:var(--accent-ink)}
-.swatches{display:flex; gap:7px}
-.sw{width:40px;height:40px;border-radius:50%;cursor:pointer;border:2px solid transparent; padding:8px;background-clip:content-box;
+.theme-cycle{display:inline-flex; align-items:center; gap:9px; border:1px solid var(--chip-brd); background:var(--chip); color:var(--text);
+  font:inherit; font-size:13px; font-weight:600; padding:8px 14px; border-radius:999px; cursor:pointer;
   transition:transform .22s var(--ease), border-color .22s var(--ease)}
-.sw:hover{transform:scale(1.18)}
-.sw[aria-pressed="true"]{border-color:var(--accent); transform:scale(1.14)}
-.sw[data-t="light"]{background:linear-gradient(135deg,#ffffff,#dfe5f0)}
-.sw[data-t="dark"]{background:linear-gradient(135deg,#141a26,#2b3648)}
-.sw[data-t="graphite"]{background:linear-gradient(135deg,#3a3b40,#6a6c74)}
-.sw[data-t="navy"]{background:linear-gradient(135deg,#0f1e36,#2b4a7f)}
+.theme-cycle:hover{border-color:var(--accent); transform:translateY(-1px)}
+.theme-cycle .tdot{width:16px; height:16px; border-radius:50%; border:1px solid var(--chip-brd); transition:background .3s var(--ease)}
+.theme-cycle[data-t="light"] .tdot{background:linear-gradient(135deg,#ffffff,#dfe5f0)}
+.theme-cycle[data-t="dark"] .tdot{background:linear-gradient(135deg,#141a26,#2b3648)}
+.theme-cycle[data-t="graphite"] .tdot{background:linear-gradient(135deg,#3a3b40,#6a6c74)}
+.theme-cycle[data-t="navy"] .tdot{background:linear-gradient(135deg,#0f1e36,#2b4a7f)}
 /* hero */
 .hero{padding:52px 0 8px}
 .hero h1{font-size:clamp(30px,4.6vw,46px); line-height:1.14; margin:0 0 12px; font-weight:850; letter-spacing:-.5px;
@@ -241,7 +241,10 @@ footer.site b{color:var(--text)}
   .bar-in{padding:8px 14px; gap:8px}
   .brand{font-size:15px}
   .ctl-lbl{display:none}
-  .sw{width:28px; height:28px; padding:6px}
+  .theme-cycle{padding:6px 11px; font-size:12px; gap:7px}
+  .theme-cycle .tdot{width:13px; height:13px}
+  .theme-cycle #theme-name{display:none}
+  .brand{flex-basis:100%}
   .sites{padding:0 14px 6px; gap:4px}
   .site-link{font-size:11.5px; padding:4px 9px}
   .hero{padding:28px 0 4px}
@@ -256,6 +259,21 @@ details.archive{margin:0 0 40px; border:1px dashed var(--chip-brd); border-radiu
 details.archive summary{cursor:pointer; font-size:13.5px; font-weight:700; color:var(--muted)}
 details.archive summary:hover{color:var(--text)}
 details.archive .job{opacity:1; transform:none; filter:saturate(.55)}
+.selgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; align-items:end}
+.selwrap{display:flex; flex-direction:column; gap:6px; position:relative}
+.selwrap .f-lbl{width:auto; padding-top:0}
+.sel{appearance:none; -webkit-appearance:none; width:100%; border:1px solid var(--chip-brd); background:var(--chip); color:var(--text);
+  font:inherit; font-size:13.5px; font-weight:600; padding:10px 34px 10px 14px; border-radius:12px; cursor:pointer;
+  transition:border-color .22s var(--ease), box-shadow .22s var(--ease)}
+[dir="rtl"] .sel{padding:10px 14px 10px 34px}
+.sel:hover,.sel:focus-visible{border-color:var(--accent); outline:none}
+.selwrap::after{content:""; position:absolute; inset-inline-end:14px; bottom:17px; width:7px; height:7px;
+  border-inline-end:2px solid var(--muted); border-bottom:2px solid var(--muted); transform:rotate(45deg); pointer-events:none}
+.sel option:disabled{color:var(--muted)}
+@keyframes cardin{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:no-preference){
+  .grid .job{animation:cardin .45s var(--ease) both}
+}
 .count-sep{margin:0 4px}
 </style>
 </head>
@@ -268,7 +286,7 @@ details.archive .job{opacity:1; transform:none; filter:saturate(.55)}
     <div class="bar-sp"></div>
     <div class="ctl-group">
       <span class="ctl-lbl" id="theme-lbl">Theme</span>
-      <div class="swatches" role="group" id="swatches" aria-label="Theme"></div>
+      <button class="theme-cycle" id="themebtn" type="button" data-t="dark"><span class="tdot" aria-hidden="true"></span><span id="theme-name">Dark</span></button>
     </div>
     <div class="ctl-group">
       <span class="ctl-lbl" id="lang-lbl">Language</span>
@@ -295,10 +313,13 @@ details.archive .job{opacity:1; transform:none; filter:saturate(.55)}
     <div class="sug" id="sug" role="listbox"></div>
   </div>
   <section class="filters reveal" aria-label="Filters">
-    <div class="f-row"><span class="f-lbl" id="l-where">Where</span><div class="chips" id="f-region"></div></div>
-    <div class="f-row"><span class="f-lbl" id="l-type">Job type</span><div class="chips" id="f-type"></div></div>
-    <div class="f-row"><span class="f-lbl" id="l-place">Workplace</span><div class="chips" id="f-place"></div></div>
-    <div class="f-row"><span class="f-lbl" id="l-sort">Sort by</span><div class="chips" id="f-sort"></div>
+    <div class="selgrid">
+      <div class="selwrap"><label class="f-lbl" id="l-where" for="f-region">Where</label><select class="sel" id="f-region"></select></div>
+      <div class="selwrap"><label class="f-lbl" id="l-type" for="f-type">Job type</label><select class="sel" id="f-type"></select></div>
+      <div class="selwrap"><label class="f-lbl" id="l-place" for="f-place">Workplace</label><select class="sel" id="f-place"></select></div>
+      <div class="selwrap"><label class="f-lbl" id="l-sort" for="f-sort">Sort by</label><select class="sel" id="f-sort"></select></div>
+    </div>
+    <div class="f-row">
       <div class="chips" id="f-list" style="margin-inline-start:auto"></div>
       <button class="btn reset" id="reset" type="button">Clear</button>
     </div>
@@ -371,7 +392,7 @@ function setData(payload, stale){
 
 const I18N = {
 en:{
-  skip:"Skip to jobs", theme:"Theme", lang:"Language", get sub(){ return REL?(SITE.sub_en_rel||SITE.sub_en):PVM?(SITE.sub_en_pvm||SITE.sub_en):SITE.sub_en; },
+  skip:"Skip to jobs", theme:"Theme", lang:"Language", themes:{light:"Light",dark:"Dark",graphite:"Graphite",navy:"Navy"}, get sub(){ return REL?(SITE.sub_en_rel||SITE.sub_en):PVM?(SITE.sub_en_pvm||SITE.sub_en):SITE.sub_en; },
   snapshot:d=>REL?`Snapshot dated ${d}. Every listing was individually checked against its live source on the snapshot date — official status endpoint or listing-page check, labeled per card; listings may still have changed or closed since. Apply links open the original posting.`:PVM?`Snapshot dated ${d}. Collected from established public job APIs; listings may have changed or closed since. Each card shows its own verification state.`:`Snapshot dated ${d}. This is a dated, work-in-progress snapshot: listings may have changed or closed since. Availability has not been re-verified against live sources.`,
   searchPh:"Search title, company, city…", where:"Where", type:"Job type", place:"Workplace", sort:"Sort by",
   all:"All", clear:"Clear filters", csv:"Export CSV",
@@ -386,7 +407,7 @@ en:{
   notePh:"Private note — stored only in this browser",
   badgeNew:"New vs last published snapshot", badgeOld:"Also in last published snapshot", deadTag:"Link dead",
   remote:"Remote world", notStated:"See posting",
-  emptyT:"No jobs match", emptyB:"Try removing a filter or a search word — every suggestion below has real results.",
+  emptyT:"No jobs match", emptyB:"Try removing a filter or a search word. The search box only suggests terms that match real jobs under your current filters.",
   emptySavedT:"No saved jobs yet", emptySavedB:"Tap Save on any card to keep it here. Saved jobs stay in this browser only.",
   emptyAppliedT:"No applied jobs yet", emptyAppliedB:"Tap Mark applied on any card after you apply, to track it here.",
   emptyHiddenT:"No hidden jobs", emptyHiddenB:"Tap Hide on any card to move it here. Hidden jobs are excluded from All jobs.",
@@ -395,7 +416,7 @@ en:{
   regions:{"Egypt":"Egypt","UAE":"UAE","Saudi Arabia":"Saudi Arabia","Other Gulf":"Other Gulf","USA":"USA","USA & Canada":"USA & Canada","Europe":"Europe","Worldwide":"Remote world","Other":"Other"}
 },
 ar:{
-  skip:"انتقل للوظائف", theme:"المظهر", lang:"اللغة", get sub(){ return REL?(SITE.sub_ar_rel||SITE.sub_ar):PVM?(SITE.sub_ar_pvm||SITE.sub_ar):SITE.sub_ar; },
+  skip:"انتقل للوظائف", theme:"المظهر", lang:"اللغة", themes:{light:"فاتح",dark:"داكن",graphite:"جرافيت",navy:"كحلي"}, get sub(){ return REL?(SITE.sub_ar_rel||SITE.sub_ar):PVM?(SITE.sub_ar_pvm||SITE.sub_ar):SITE.sub_ar; },
   snapshot:d=>REL?`لقطة بتاريخ \u2066${d}\u2069. كل إعلان اتراجع مقابل مصدره الحي في تاريخ اللقطة — إما عبر نقطة الحالة الرسمية أو بفحص صفحة الإعلان، والطريقة موضحة على كل كارت؛ وممكن الإعلانات اتغيرت أو اتقفلت بعدها. زر التقديم يفتح الإعلان الأصلي.`:PVM?`لقطة بتاريخ \u2066${d}\u2069. متجمّعة من واجهات برمجية عامة موثقة المصدر؛ ممكن الإعلانات اتغيرت أو اتقفلت بعدها. كل كارت يوضح حالة التحقق الخاصة به.`:`لقطة بتاريخ \u2066${d}\u2069. دي لقطة مؤرخة وشغل تحت التطوير: ممكن الإعلانات اتغيرت أو اتقفلت بعدها. التوفر لم يُعَد التحقق منه مقابل المصادر الحية.`,
   searchPh:"دوّر بالمسمى أو الشركة أو المدينة…", where:"المكان", type:"نوع العمل", place:"نظام العمل", sort:"ترتيب",
   all:"الكل", clear:"مسح الفلاتر", csv:"تصدير CSV",
@@ -410,7 +431,7 @@ ar:{
   notePh:"ملاحظة خاصة — بتتحفظ في المتصفح ده بس",
   badgeNew:"جديد عن آخر لقطة منشورة", badgeOld:"موجود في آخر لقطة منشورة", deadTag:"رابط مغلق",
   remote:"عن بُعد عالمي", notStated:"انظر الإعلان",
-  emptyT:"مفيش نتايج مطابقة", emptyB:"جرّب تشيل فلتر أو كلمة بحث — كل اقتراح تحته ليه نتايج حقيقية.",
+  emptyT:"مفيش نتايج مطابقة", emptyB:"جرّب تشيل فلتر أو كلمة بحث. مربع البحث بيقترح بس كلمات ليها نتايج حقيقية مع الفلاتر الحالية.",
   emptySavedT:"لسه مفيش وظايف محفوظة", emptySavedB:"دوس احفظ على أي كارت عشان تحفظه هنا. الوظايف المحفوظة بتفضل في المتصفح ده بس.",
   emptyAppliedT:"لسه مفيش وظايف قُدِّم عليها", emptyAppliedB:"بعد ما تقدم، دوس علّم كمُقدَّم على الكارت عشان تتبعها هنا.",
   emptyHiddenT:"مفيش وظايف مخفية", emptyHiddenB:"دوس إخفاء على أي كارت عشان تنقلها هنا. الوظايف المخفية مش بتظهر في كل الوظائف.",
@@ -424,6 +445,7 @@ const PLCORD = ["Remote","Hybrid","Onsite","Not stated"];
 const LSKEY = "ci-state-" + SITE.key + "-v1";
 const LANGKEY = "ci-lang-v1";
 const THEMEKEY = "ci-theme-v2";
+const THEMES = [["light","Light"],["dark","Dark"],["graphite","Graphite"],["navy","Navy"]];
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -472,7 +494,8 @@ let f = { q:"", region:"all", type:"all", place:"all", sort:"recent", list:"all"
 function applyTheme(){
   document.documentElement.dataset.theme = theme;
   document.documentElement.style.setProperty("--hue", SITE.hue);
-  document.querySelectorAll(".sw").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.t === theme)));
+  const tb = $("themebtn");
+  if (tb){ const cur = THEMES.find(x => x[0] === theme) || THEMES[1]; const loc = (I18N[lang].themes || {})[cur[0]] || cur[1]; tb.dataset.t = cur[0]; const nm = $("theme-name"); if (nm) nm.textContent = loc; tb.setAttribute("aria-label", I18N[lang].theme + ": " + loc); }
   localStorage.setItem(THEMEKEY, theme);
 }
 function applyLang(){
@@ -508,7 +531,8 @@ function applyLang(){
     if (key === SITE.key) a.setAttribute("aria-current", "page");
     sn.appendChild(a);
   });
-  sn.querySelectorAll("a").forEach(a => a.textContent = lang === "ar" ? a.dataset.ar : a.dataset.en);
+  sn.querySelectorAll("a").forEach(a => { a.textContent = lang === "ar" ? a.dataset.ar : a.dataset.en; a.dir = "auto"; });
+  applyTheme();
   if (DATA){ renderBreaks(); renderFilters(); render(); }
 }
 
@@ -549,28 +573,36 @@ function chip(label, pressed, onclick, count){
   b.onclick = onclick;
   return b;
 }
+function viewOK(j){
+  if (f.list === "saved") return !!state.saved[j.id];
+  if (f.list === "applied") return !!state.applied[j.id];
+  if (f.list === "hidden") return !!state.hidden[j.id];
+  return !state.hidden[j.id];
+}
+function countWith(dim, val){
+  const keep = f[dim]; f[dim] = val;
+  const n = JOBS.filter(j => viewOK(j) && matchF(j)).length;
+  f[dim] = keep;
+  return n;
+}
+function fillSel(sel, options, cur){
+  sel.textContent = "";
+  options.forEach(([val, label, n]) => {
+    const o = document.createElement("option");
+    o.value = val;
+    o.textContent = n != null ? label + " (" + n + ")" : label;
+    if (n === 0) o.disabled = true;
+    if (val === cur) o.selected = true;
+    sel.appendChild(o);
+  });
+}
 function renderFilters(){
+  if (DATA) SUG = buildSug();
   const t = I18N[lang];
-  const reg = $("f-region"); reg.textContent = "";
-  reg.appendChild(chip(t.all, f.region === "all", () => { f.region = "all"; renderFilters(); render(); }));
-  REGORD.filter(r => JOBS.some(j => j.region === r)).forEach(r => {
-    const n = JOBS.filter(j => j.region === r).length;
-    reg.appendChild(chip(t.regions[r] || r, f.region === r, () => { f.region = r; renderFilters(); render(); }, n));
-  });
-  const ty = $("f-type"); ty.textContent = "";
-  ty.appendChild(chip(t.all, f.type === "all", () => { f.type = "all"; renderFilters(); render(); }));
-  TYPORD.filter(x => JOBS.some(j => j.type === x)).forEach(x => {
-    ty.appendChild(chip(tv(x), f.type === x, () => { f.type = x; renderFilters(); render(); }));
-  });
-  const pl = $("f-place"); pl.textContent = "";
-  pl.appendChild(chip(t.all, f.place === "all", () => { f.place = "all"; renderFilters(); render(); }));
-  PLCORD.filter(x => JOBS.some(j => j.workplace === x)).forEach(x => {
-    const lbl = tv(x);
-    pl.appendChild(chip(lbl, f.place === x, () => { f.place = x; renderFilters(); render(); }));
-  });
-  const so = $("f-sort"); so.textContent = "";
-  for (const k of ["recent","oldest","intern","comp"])
-    so.appendChild(chip(t.sorts[k], f.sort === k, () => { f.sort = k; renderFilters(); render(); }));
+  fillSel($("f-region"), [["all", t.all, null]].concat(REGORD.filter(r => JOBS.some(j => j.region === r)).map(r => [r, t.regions[r] || r, countWith("region", r)])), f.region);
+  fillSel($("f-type"), [["all", t.all, null]].concat(TYPORD.filter(x => JOBS.some(j => j.type === x)).map(x => [x, tv(x), countWith("type", x)])), f.type);
+  fillSel($("f-place"), [["all", t.all, null]].concat(PLCORD.filter(x => JOBS.some(j => j.workplace === x)).map(x => [x, tv(x), countWith("place", x)])), f.place);
+  fillSel($("f-sort"), ["recent","oldest","intern","comp"].map(k => [k, t.sorts[k], null]), f.sort);
   const li = $("f-list"); li.textContent = "";
   const counts = { saved:Object.keys(state.saved).length, applied:Object.keys(state.applied).length, hidden:Object.keys(state.hidden).length };
   li.appendChild(chip(t.lists.all, f.list === "all", () => { f.list = "all"; renderFilters(); render(); }));
@@ -579,18 +611,27 @@ function renderFilters(){
   li.appendChild(chip(t.lists.hidden, f.list === "hidden", () => { f.list = "hidden"; renderFilters(); render(); }, counts.hidden || null));
 }
 
-/* suggestions */
+/* suggestions: counts are honest - a suggestion's number is how many jobs
+   it yields under the CURRENT select filters (it replaces the search word,
+   so the word itself is not part of its own count). Zero-yield terms are
+   never suggested. */
 const ROLE_WORDS = SITE.roles;
+function matchSel(j){
+  return (f.region === "all" || j.region === f.region) &&
+    (f.type === "all" || j.type === f.type) &&
+    (f.place === "all" || j.workplace === f.place);
+}
 function buildSug(){
+  const cnt = w => JOBS.filter(j => viewOK(j) && matchSel(j) && matchQ(j, w)).length;
   const out = [];
-  ROLE_WORDS.forEach(w => { const n = JOBS.filter(j => matchQ(j, w)).length; if (n) out.push({ text:w, kind:"Role", n }); });
+  ROLE_WORDS.forEach(w => { const n = cnt(w); if (n) out.push({ text:w, kind:"Role", n }); });
   const cities = new Map(), cos = new Map();
   JOBS.forEach(j => {
     const c = (j.location || "").split(",")[0].trim(); if (c) cities.set(c, (cities.get(c)||0)+1);
     const co = (j.company || "").trim().replace(/\.$/, ""); if (co) cos.set(co, (cos.get(co)||0)+1);
   });
-  [...cities.entries()].sort((a,b)=>b[1]-a[1]).slice(0,10).forEach(([c]) => { const n = JOBS.filter(j=>matchQ(j,c)).length; if (n) out.push({ text:c, kind:"City", n }); });
-  [...cos.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,10).forEach(([c]) => { const n = JOBS.filter(j=>matchQ(j,c)).length; if (n) out.push({ text:c, kind:"Company", n }); });
+  [...cities.entries()].sort((a,b)=>b[1]-a[1]).slice(0,10).forEach(([c]) => { const n = cnt(c); if (n) out.push({ text:c, kind:"City", n }); });
+  [...cos.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,10).forEach(([c]) => { const n = cnt(c); if (n) out.push({ text:c, kind:"Company", n }); });
   return out;
 }
 let SUG = [];
@@ -604,7 +645,7 @@ function renderSug(list){
     const s1 = document.createElement("span"); s1.textContent = x.text; b.appendChild(s1);
     const s2 = document.createElement("span"); s2.className = "k"; s2.textContent = t.sugKind[x.kind]; b.appendChild(s2);
     const s3 = document.createElement("span"); s3.className = "n"; s3.textContent = String(x.n); b.appendChild(s3);
-    b.onclick = () => { $("q").value = x.text; f.q = x.text; closeSug(); render(); };
+    b.onclick = () => { $("q").value = x.text; f.q = x.text; closeSug(); renderFilters(); render(); };
     s.appendChild(b);
   });
 }
@@ -895,12 +936,10 @@ function init(){
   window.addEventListener("scroll", syncCompact, { passive:true });
   window.addEventListener("resize", syncCompact);
   syncCompact();
-  const sw = $("swatches");
-  [["light","Light"],["dark","Dark"],["graphite","Graphite"],["navy","Navy"]].forEach(([k, lbl]) => {
-    const b = document.createElement("button");
-    b.type = "button"; b.className = "sw"; b.dataset.t = k; b.title = lbl; b.setAttribute("aria-label", lbl + " theme");
-    b.onclick = () => { theme = k; applyTheme(); };
-    sw.appendChild(b);
+  const tb = $("themebtn");
+  tb.onclick = () => { const i = THEMES.findIndex(x => x[0] === theme); theme = THEMES[(i + 1) % THEMES.length][0]; applyTheme(); };
+  [["f-region","region"],["f-type","type"],["f-place","place"],["f-sort","sort"]].forEach(([id, dim]) => {
+    $(id).onchange = e => { f[dim] = e.target.value; renderFilters(); render(); };
   });
   document.querySelectorAll("#langseg button").forEach(b => b.onclick = () => { lang = b.dataset.l; applyLang(); document.querySelectorAll("[data-n]").forEach(e => e.textContent = e.dataset.n); });
   $("reset").onclick = () => { f = { q:"", region:"all", type:"all", place:"all", sort:"recent", list:"all" }; $("q").value = ""; renderFilters(); render(); };
@@ -911,6 +950,7 @@ function init(){
     const v = q.value.trim().toLowerCase();
     renderSug(v ? SUG.filter(x => x.text.toLowerCase().includes(v)) : SUG);
     openSug();
+    renderFilters();
     render();
   });
   q.addEventListener("focus", () => { renderSug(q.value.trim() ? SUG.filter(x => x.text.toLowerCase().includes(q.value.trim().toLowerCase())) : SUG); if ($("sug").children.length) openSug(); });
