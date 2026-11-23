@@ -1,54 +1,22 @@
 {
  "site": "marketing",
- "run_at": "2026-11-23T03:06:50.971431+00:00",
+ "run_at": "2026-11-23T20:22:50.935175+00:00",
  "dry_run": false,
  "fresh_verified": {
-  "jobicy_status_endpoint": 32,
-  "bounded_content_check": 8
+  "jobicy_status_endpoint": 36,
+  "bounded_content_check": 12
  },
- "carried": [],
- "archived": [
-  {
-   "id": "marketing-artist-cortex-voodoo-marketing-artist-cortex-paris-39875",
-   "reason": "carried verification older than 0d"
-  },
-  {
-   "id": "senior-lifecycle-marketing-manager-all-genders-hellofresh-senior-lifecycle-marketing-manag",
-   "reason": "absent from fresh fetch and verification stale"
-  },
-  {
-   "id": "social-media-manager-videograf-m-w-d-vollzeit-ekin-immobilie-social-media-manager-videogra",
-   "reason": "absent from fresh fetch and verification stale"
-  },
-  {
-   "id": "social-media-e-mail-marketing-manager-m-w-d-fokus-klettern-b-social-media-e-mail-marketing",
-   "reason": "absent from fresh fetch and verification stale"
-  },
-  {
-   "id": "social-content-manager-jellyfish-social-content-manager-berlin-261563",
-   "reason": "absent from fresh fetch and verification stale"
-  },
-  {
-   "id": "senior-data-scientist-marketing-dsa-vinteden-senior-data-scientist-marketing-dsa-berlin-48",
-   "reason": "absent from fresh fetch and verification stale"
-  },
-  {
-   "id": "junior-marketing-manager-dach-amboss-junior-marketing-manager-dach-berlin-149378",
-   "reason": "absent from fresh fetch and verification stale"
-  },
-  {
-   "id": "senior-product-marketing-manager-emea-camunda-remote-senior-product-marketing-manager-emea",
-   "reason": "absent from fresh fetch and verification stale"
-  },
-  {
-   "id": "senior-partner-marketing-manager-gsis-n8n-senior-partner-marketing-manager-gsis-berlin-448",
-   "reason": "absent from fresh fetch and verification stale"
-  },
-  {
-   "id": "pflichtpraktikum-social-media-und-content-marketing-m-w-d-tr-pflichtpraktikum-social-media",
-   "reason": "absent from fresh fetch and verification stale"
-  }
+ "carried": [
+  "influencer-supervisor-influencer-marketing-france-viralnatio-influencer-supervisor-influen",
+  "influencer-manager-influencer-marketing-france-viralnation-influencer-manager-influencer-m",
+  "influencer-director-influencer-marketing-viralnation-influencer-director-influencer-market",
+  "account-supervisor-influencer-marketing-france-viralnation-account-supervisor-influencer-m",
+  "account-manager-influencer-marketing-france-viralnation-account-manager-influencer-marketi",
+  "account-director-influencer-marketing-viralnation-account-director-influencer-marketing-47",
+  "praktikum-m-w-d-praktikum-social-media-content-marketing-bel-praktikum-praktikum-social-me",
+  "fos-praktikant-m-w-d-marketing-mediengestaltung-kamberi-grou-fos-praktikant-mwd-marketing-"
  ],
+ "archived": [],
  "excluded": [
   {
    "id": "principal-technical-marketing-engineer-zscaler-163789",
@@ -64,19 +32,19 @@
   }
  ],
  "errors": [],
- "prev_jobicy_status_checked": 16,
+ "prev_jobicy_status_checked": 22,
  "counts": {
-  "publishable": 40,
-  "prev": 37,
-  "fresh": 40,
-  "carried": 0,
-  "archived": 10,
+  "publishable": 56,
+  "prev": 40,
+  "fresh": 48,
+  "carried": 8,
+  "archived": 0,
   "excluded": 3
  },
  "fresh_verified_by_source": {
   "arbeitnow": {
-   "eligible": 132,
-   "fresh_success": 24
+   "eligible": 155,
+   "fresh_success": 17
   }
  },
  "publication_gate": {
@@ -97,5 +65,5 @@
    "arbeitnow": 881
   }
  },
- "build_sha256_16": "46c9d4caaa3bf217"
+ "build_sha256_16": "e7d053eea0d4cc88"
 }
