@@ -407,7 +407,7 @@ en:{
   notePh:"Private note — stored only in this browser",
   badgeNew:"New vs last published snapshot", badgeOld:"Also in last published snapshot", deadTag:"Link dead",
   remote:"Remote world", notStated:"See posting",
-  emptyT:"No jobs match", emptyB:"Try removing a filter or a search word — every suggestion below has real results.",
+  emptyT:"No jobs match", emptyB:"Try removing a filter or a search word. The search box only suggests terms that match real jobs under your current filters.",
   emptySavedT:"No saved jobs yet", emptySavedB:"Tap Save on any card to keep it here. Saved jobs stay in this browser only.",
   emptyAppliedT:"No applied jobs yet", emptyAppliedB:"Tap Mark applied on any card after you apply, to track it here.",
   emptyHiddenT:"No hidden jobs", emptyHiddenB:"Tap Hide on any card to move it here. Hidden jobs are excluded from All jobs.",
@@ -431,7 +431,7 @@ ar:{
   notePh:"ملاحظة خاصة — بتتحفظ في المتصفح ده بس",
   badgeNew:"جديد عن آخر لقطة منشورة", badgeOld:"موجود في آخر لقطة منشورة", deadTag:"رابط مغلق",
   remote:"عن بُعد عالمي", notStated:"انظر الإعلان",
-  emptyT:"مفيش نتايج مطابقة", emptyB:"جرّب تشيل فلتر أو كلمة بحث — كل اقتراح تحته ليه نتايج حقيقية.",
+  emptyT:"مفيش نتايج مطابقة", emptyB:"جرّب تشيل فلتر أو كلمة بحث. مربع البحث بيقترح بس كلمات ليها نتايج حقيقية مع الفلاتر الحالية.",
   emptySavedT:"لسه مفيش وظايف محفوظة", emptySavedB:"دوس احفظ على أي كارت عشان تحفظه هنا. الوظايف المحفوظة بتفضل في المتصفح ده بس.",
   emptyAppliedT:"لسه مفيش وظايف قُدِّم عليها", emptyAppliedB:"بعد ما تقدم، دوس علّم كمُقدَّم على الكارت عشان تتبعها هنا.",
   emptyHiddenT:"مفيش وظايف مخفية", emptyHiddenB:"دوس إخفاء على أي كارت عشان تنقلها هنا. الوظايف المخفية مش بتظهر في كل الوظائف.",
@@ -531,7 +531,7 @@ function applyLang(){
     if (key === SITE.key) a.setAttribute("aria-current", "page");
     sn.appendChild(a);
   });
-  sn.querySelectorAll("a").forEach(a => a.textContent = lang === "ar" ? a.dataset.ar : a.dataset.en);
+  sn.querySelectorAll("a").forEach(a => { a.textContent = lang === "ar" ? a.dataset.ar : a.dataset.en; a.dir = "auto"; });
   applyTheme();
   if (DATA){ renderBreaks(); renderFilters(); render(); }
 }
@@ -591,6 +591,7 @@ function fillSel(sel, options, cur){
   });
 }
 function renderFilters(){
+  if (DATA) SUG = buildSug();
   const t = I18N[lang];
   fillSel($("f-region"), [["all", t.all, null]].concat(REGORD.filter(r => JOBS.some(j => j.region === r)).map(r => [r, t.regions[r] || r, countWith("region", r)])), f.region);
   fillSel($("f-type"), [["all", t.all, null]].concat(TYPORD.filter(x => JOBS.some(j => j.type === x)).map(x => [x, tv(x), countWith("type", x)])), f.type);
@@ -604,18 +605,27 @@ function renderFilters(){
   li.appendChild(chip(t.lists.hidden, f.list === "hidden", () => { f.list = "hidden"; renderFilters(); render(); }, counts.hidden || null));
 }
 
-/* suggestions */
+/* suggestions: counts are honest - a suggestion's number is how many jobs
+   it yields under the CURRENT select filters (it replaces the search word,
+   so the word itself is not part of its own count). Zero-yield terms are
+   never suggested. */
 const ROLE_WORDS = SITE.roles;
+function matchSel(j){
+  return (f.region === "all" || j.region === f.region) &&
+    (f.type === "all" || j.type === f.type) &&
+    (f.place === "all" || j.workplace === f.place);
+}
 function buildSug(){
+  const cnt = w => JOBS.filter(j => matchSel(j) && matchQ(j, w)).length;
   const out = [];
-  ROLE_WORDS.forEach(w => { const n = JOBS.filter(j => matchQ(j, w)).length; if (n) out.push({ text:w, kind:"Role", n }); });
+  ROLE_WORDS.forEach(w => { const n = cnt(w); if (n) out.push({ text:w, kind:"Role", n }); });
   const cities = new Map(), cos = new Map();
   JOBS.forEach(j => {
     const c = (j.location || "").split(",")[0].trim(); if (c) cities.set(c, (cities.get(c)||0)+1);
     const co = (j.company || "").trim().replace(/\.$/, ""); if (co) cos.set(co, (cos.get(co)||0)+1);
   });
-  [...cities.entries()].sort((a,b)=>b[1]-a[1]).slice(0,10).forEach(([c]) => { const n = JOBS.filter(j=>matchQ(j,c)).length; if (n) out.push({ text:c, kind:"City", n }); });
-  [...cos.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,10).forEach(([c]) => { const n = JOBS.filter(j=>matchQ(j,c)).length; if (n) out.push({ text:c, kind:"Company", n }); });
+  [...cities.entries()].sort((a,b)=>b[1]-a[1]).slice(0,10).forEach(([c]) => { const n = cnt(c); if (n) out.push({ text:c, kind:"City", n }); });
+  [...cos.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,10).forEach(([c]) => { const n = cnt(c); if (n) out.push({ text:c, kind:"Company", n }); });
   return out;
 }
 let SUG = [];
@@ -629,7 +639,7 @@ function renderSug(list){
     const s1 = document.createElement("span"); s1.textContent = x.text; b.appendChild(s1);
     const s2 = document.createElement("span"); s2.className = "k"; s2.textContent = t.sugKind[x.kind]; b.appendChild(s2);
     const s3 = document.createElement("span"); s3.className = "n"; s3.textContent = String(x.n); b.appendChild(s3);
-    b.onclick = () => { $("q").value = x.text; f.q = x.text; closeSug(); render(); };
+    b.onclick = () => { $("q").value = x.text; f.q = x.text; closeSug(); renderFilters(); render(); };
     s.appendChild(b);
   });
 }
@@ -934,6 +944,7 @@ function init(){
     const v = q.value.trim().toLowerCase();
     renderSug(v ? SUG.filter(x => x.text.toLowerCase().includes(v)) : SUG);
     openSug();
+    renderFilters();
     render();
   });
   q.addEventListener("focus", () => { renderSug(q.value.trim() ? SUG.filter(x => x.text.toLowerCase().includes(q.value.trim().toLowerCase())) : SUG); if ($("sug").children.length) openSug(); });
