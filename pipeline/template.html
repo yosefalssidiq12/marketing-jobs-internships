@@ -105,15 +105,15 @@ header.bar{position:sticky; top:0; z-index:20; backdrop-filter:blur(14px); -webk
   padding:6px 12px; border-radius:999px; cursor:pointer; transition:all .22s var(--ease)}
 .seg button:hover{color:var(--text)}
 .seg button[aria-pressed="true"]{background:linear-gradient(135deg,var(--accent-cta),var(--accent-cta2)); color:var(--accent-ink)}
-.swatches{display:flex; gap:7px}
-.sw{width:40px;height:40px;border-radius:50%;cursor:pointer;border:2px solid transparent; padding:8px;background-clip:content-box;
+.theme-cycle{display:inline-flex; align-items:center; gap:9px; border:1px solid var(--chip-brd); background:var(--chip); color:var(--text);
+  font:inherit; font-size:13px; font-weight:600; padding:8px 14px; border-radius:999px; cursor:pointer;
   transition:transform .22s var(--ease), border-color .22s var(--ease)}
-.sw:hover{transform:scale(1.18)}
-.sw[aria-pressed="true"]{border-color:var(--accent); transform:scale(1.14)}
-.sw[data-t="light"]{background:linear-gradient(135deg,#ffffff,#dfe5f0)}
-.sw[data-t="dark"]{background:linear-gradient(135deg,#141a26,#2b3648)}
-.sw[data-t="graphite"]{background:linear-gradient(135deg,#3a3b40,#6a6c74)}
-.sw[data-t="navy"]{background:linear-gradient(135deg,#0f1e36,#2b4a7f)}
+.theme-cycle:hover{border-color:var(--accent); transform:translateY(-1px)}
+.theme-cycle .tdot{width:16px; height:16px; border-radius:50%; border:1px solid var(--chip-brd); transition:background .3s var(--ease)}
+.theme-cycle[data-t="light"] .tdot{background:linear-gradient(135deg,#ffffff,#dfe5f0)}
+.theme-cycle[data-t="dark"] .tdot{background:linear-gradient(135deg,#141a26,#2b3648)}
+.theme-cycle[data-t="graphite"] .tdot{background:linear-gradient(135deg,#3a3b40,#6a6c74)}
+.theme-cycle[data-t="navy"] .tdot{background:linear-gradient(135deg,#0f1e36,#2b4a7f)}
 /* hero */
 .hero{padding:52px 0 8px}
 .hero h1{font-size:clamp(30px,4.6vw,46px); line-height:1.14; margin:0 0 12px; font-weight:850; letter-spacing:-.5px;
@@ -241,7 +241,8 @@ footer.site b{color:var(--text)}
   .bar-in{padding:8px 14px; gap:8px}
   .brand{font-size:15px}
   .ctl-lbl{display:none}
-  .sw{width:28px; height:28px; padding:6px}
+  .theme-cycle{padding:6px 11px; font-size:12px; gap:7px}
+  .theme-cycle .tdot{width:13px; height:13px}
   .sites{padding:0 14px 6px; gap:4px}
   .site-link{font-size:11.5px; padding:4px 9px}
   .hero{padding:28px 0 4px}
@@ -256,6 +257,21 @@ details.archive{margin:0 0 40px; border:1px dashed var(--chip-brd); border-radiu
 details.archive summary{cursor:pointer; font-size:13.5px; font-weight:700; color:var(--muted)}
 details.archive summary:hover{color:var(--text)}
 details.archive .job{opacity:1; transform:none; filter:saturate(.55)}
+.selgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; align-items:end}
+.selwrap{display:flex; flex-direction:column; gap:6px; position:relative}
+.selwrap .f-lbl{width:auto; padding-top:0}
+.sel{appearance:none; -webkit-appearance:none; width:100%; border:1px solid var(--chip-brd); background:var(--chip); color:var(--text);
+  font:inherit; font-size:13.5px; font-weight:600; padding:10px 34px 10px 14px; border-radius:12px; cursor:pointer;
+  transition:border-color .22s var(--ease), box-shadow .22s var(--ease)}
+[dir="rtl"] .sel{padding:10px 14px 10px 34px}
+.sel:hover,.sel:focus-visible{border-color:var(--accent); outline:none}
+.selwrap::after{content:""; position:absolute; inset-inline-end:14px; bottom:17px; width:7px; height:7px;
+  border-inline-end:2px solid var(--muted); border-bottom:2px solid var(--muted); transform:rotate(45deg); pointer-events:none}
+.sel option:disabled{color:var(--muted)}
+@keyframes cardin{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:no-preference){
+  .grid .job{animation:cardin .45s var(--ease) both}
+}
 .count-sep{margin:0 4px}
 </style>
 </head>
@@ -268,7 +284,7 @@ details.archive .job{opacity:1; transform:none; filter:saturate(.55)}
     <div class="bar-sp"></div>
     <div class="ctl-group">
       <span class="ctl-lbl" id="theme-lbl">Theme</span>
-      <div class="swatches" role="group" id="swatches" aria-label="Theme"></div>
+      <button class="theme-cycle" id="themebtn" type="button" data-t="dark"><span class="tdot" aria-hidden="true"></span><span id="theme-name">Dark</span></button>
     </div>
     <div class="ctl-group">
       <span class="ctl-lbl" id="lang-lbl">Language</span>
@@ -295,10 +311,13 @@ details.archive .job{opacity:1; transform:none; filter:saturate(.55)}
     <div class="sug" id="sug" role="listbox"></div>
   </div>
   <section class="filters reveal" aria-label="Filters">
-    <div class="f-row"><span class="f-lbl" id="l-where">Where</span><div class="chips" id="f-region"></div></div>
-    <div class="f-row"><span class="f-lbl" id="l-type">Job type</span><div class="chips" id="f-type"></div></div>
-    <div class="f-row"><span class="f-lbl" id="l-place">Workplace</span><div class="chips" id="f-place"></div></div>
-    <div class="f-row"><span class="f-lbl" id="l-sort">Sort by</span><div class="chips" id="f-sort"></div>
+    <div class="selgrid">
+      <div class="selwrap"><label class="f-lbl" id="l-where" for="f-region">Where</label><select class="sel" id="f-region"></select></div>
+      <div class="selwrap"><label class="f-lbl" id="l-type" for="f-type">Job type</label><select class="sel" id="f-type"></select></div>
+      <div class="selwrap"><label class="f-lbl" id="l-place" for="f-place">Workplace</label><select class="sel" id="f-place"></select></div>
+      <div class="selwrap"><label class="f-lbl" id="l-sort" for="f-sort">Sort by</label><select class="sel" id="f-sort"></select></div>
+    </div>
+    <div class="f-row">
       <div class="chips" id="f-list" style="margin-inline-start:auto"></div>
       <button class="btn reset" id="reset" type="button">Clear</button>
     </div>
@@ -424,6 +443,7 @@ const PLCORD = ["Remote","Hybrid","Onsite","Not stated"];
 const LSKEY = "ci-state-" + SITE.key + "-v1";
 const LANGKEY = "ci-lang-v1";
 const THEMEKEY = "ci-theme-v2";
+const THEMES = [["light","Light"],["dark","Dark"],["graphite","Graphite"],["navy","Navy"]];
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -472,7 +492,8 @@ let f = { q:"", region:"all", type:"all", place:"all", sort:"recent", list:"all"
 function applyTheme(){
   document.documentElement.dataset.theme = theme;
   document.documentElement.style.setProperty("--hue", SITE.hue);
-  document.querySelectorAll(".sw").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.t === theme)));
+  const tb = $("themebtn");
+  if (tb){ const cur = THEMES.find(x => x[0] === theme) || THEMES[1]; tb.dataset.t = cur[0]; const nm = $("theme-name"); if (nm) nm.textContent = cur[1]; tb.setAttribute("aria-label", I18N[lang].theme + ": " + cur[1]); }
   localStorage.setItem(THEMEKEY, theme);
 }
 function applyLang(){
@@ -549,28 +570,29 @@ function chip(label, pressed, onclick, count){
   b.onclick = onclick;
   return b;
 }
+function countWith(dim, val){
+  const keep = f[dim]; f[dim] = val;
+  const n = JOBS.filter(matchF).length;
+  f[dim] = keep;
+  return n;
+}
+function fillSel(sel, options, cur){
+  sel.textContent = "";
+  options.forEach(([val, label, n]) => {
+    const o = document.createElement("option");
+    o.value = val;
+    o.textContent = n != null ? label + " (" + n + ")" : label;
+    if (n === 0) o.disabled = true;
+    if (val === cur) o.selected = true;
+    sel.appendChild(o);
+  });
+}
 function renderFilters(){
   const t = I18N[lang];
-  const reg = $("f-region"); reg.textContent = "";
-  reg.appendChild(chip(t.all, f.region === "all", () => { f.region = "all"; renderFilters(); render(); }));
-  REGORD.filter(r => JOBS.some(j => j.region === r)).forEach(r => {
-    const n = JOBS.filter(j => j.region === r).length;
-    reg.appendChild(chip(t.regions[r] || r, f.region === r, () => { f.region = r; renderFilters(); render(); }, n));
-  });
-  const ty = $("f-type"); ty.textContent = "";
-  ty.appendChild(chip(t.all, f.type === "all", () => { f.type = "all"; renderFilters(); render(); }));
-  TYPORD.filter(x => JOBS.some(j => j.type === x)).forEach(x => {
-    ty.appendChild(chip(tv(x), f.type === x, () => { f.type = x; renderFilters(); render(); }));
-  });
-  const pl = $("f-place"); pl.textContent = "";
-  pl.appendChild(chip(t.all, f.place === "all", () => { f.place = "all"; renderFilters(); render(); }));
-  PLCORD.filter(x => JOBS.some(j => j.workplace === x)).forEach(x => {
-    const lbl = tv(x);
-    pl.appendChild(chip(lbl, f.place === x, () => { f.place = x; renderFilters(); render(); }));
-  });
-  const so = $("f-sort"); so.textContent = "";
-  for (const k of ["recent","oldest","intern","comp"])
-    so.appendChild(chip(t.sorts[k], f.sort === k, () => { f.sort = k; renderFilters(); render(); }));
+  fillSel($("f-region"), [["all", t.all, null]].concat(REGORD.filter(r => JOBS.some(j => j.region === r)).map(r => [r, t.regions[r] || r, countWith("region", r)])), f.region);
+  fillSel($("f-type"), [["all", t.all, null]].concat(TYPORD.filter(x => JOBS.some(j => j.type === x)).map(x => [x, tv(x), countWith("type", x)])), f.type);
+  fillSel($("f-place"), [["all", t.all, null]].concat(PLCORD.filter(x => JOBS.some(j => j.workplace === x)).map(x => [x, tv(x), countWith("place", x)])), f.place);
+  fillSel($("f-sort"), ["recent","oldest","intern","comp"].map(k => [k, t.sorts[k], null]), f.sort);
   const li = $("f-list"); li.textContent = "";
   const counts = { saved:Object.keys(state.saved).length, applied:Object.keys(state.applied).length, hidden:Object.keys(state.hidden).length };
   li.appendChild(chip(t.lists.all, f.list === "all", () => { f.list = "all"; renderFilters(); render(); }));
@@ -895,12 +917,10 @@ function init(){
   window.addEventListener("scroll", syncCompact, { passive:true });
   window.addEventListener("resize", syncCompact);
   syncCompact();
-  const sw = $("swatches");
-  [["light","Light"],["dark","Dark"],["graphite","Graphite"],["navy","Navy"]].forEach(([k, lbl]) => {
-    const b = document.createElement("button");
-    b.type = "button"; b.className = "sw"; b.dataset.t = k; b.title = lbl; b.setAttribute("aria-label", lbl + " theme");
-    b.onclick = () => { theme = k; applyTheme(); };
-    sw.appendChild(b);
+  const tb = $("themebtn");
+  tb.onclick = () => { const i = THEMES.findIndex(x => x[0] === theme); theme = THEMES[(i + 1) % THEMES.length][0]; applyTheme(); };
+  [["f-region","region"],["f-type","type"],["f-place","place"],["f-sort","sort"]].forEach(([id, dim]) => {
+    $(id).onchange = e => { f[dim] = e.target.value; renderFilters(); render(); };
   });
   document.querySelectorAll("#langseg button").forEach(b => b.onclick = () => { lang = b.dataset.l; applyLang(); document.querySelectorAll("[data-n]").forEach(e => e.textContent = e.dataset.n); });
   $("reset").onclick = () => { f = { q:"", region:"all", type:"all", place:"all", sort:"recent", list:"all" }; $("q").value = ""; renderFilters(); render(); };
