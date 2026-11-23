@@ -87,6 +87,12 @@ def main():
     report = {"site": site, "run_at": NOW.isoformat(), "dry_run": dry_run,
               "fresh_verified": {}, "carried": [], "archived": [], "excluded": [],
               "errors": []}
+    # Publish-ready marker: remove any stale marker left by an earlier
+    # run, so only a marker created by THIS run after gate acceptance
+    # can authorise publication.
+    _old_marker = os.path.join(OUT, f".publish-ready-{site}")
+    if os.path.exists(_old_marker):
+        os.remove(_old_marker)
 
     # 1. collect (remotive gated off in collect.py unless CAREER_ENABLE_REMOTIVE=1)
     collect = load_mod("collect")
@@ -278,6 +284,7 @@ def main():
 
     payload = {
         "updated": NOW.strftime("%Y-%m-%d %H:%M UTC"),
+        "generated_at": NOW.isoformat(),
         "date": TODAY,
         "release_candidate": True,
         "verification_model": f"v6-auto-refresh-{TODAY} (carried rows keep their original verification date in vlabel)",
@@ -361,9 +368,16 @@ def main():
         if os.path.exists(_st + ".next"):
             os.replace(_st + ".next", _st)  # promote staged state only after gate acceptance
         json.dump(payload, open(prev_path, "w"), ensure_ascii=False, indent=1)
-        import repro_build
-        h = repro_build.build_rel(site, repo_root)
-        report["build_sha256_16"] = h
+        # Do NOT build index.html here. The daily path must never produce
+        # or commit a frontend file. The frontend is built only by the
+        # manual frontend-build job (pipeline/repro_build.py).
+        # Publish-ready marker: created ONLY here, i.e. only after the
+        # gate passed and the payload was written. The workflow's publish
+        # step requires this marker and deletes it after checking.
+        _marker = os.path.join(OUT, f".publish-ready-{site}")
+        with open(_marker, "w", encoding="utf-8") as _f:
+            _f.write(payload["generated_at"] + "\n")
+        report["build_sha256_16"] = None
     json.dump(report, open(os.path.join(OUT, "refresh-report.json"), "w"), ensure_ascii=False, indent=1)
     print(json.dumps(report["counts"], indent=1))
     print("carried:", len(report["carried"]), "archived:", len(report["archived"]), "excluded:", len(report["excluded"]))

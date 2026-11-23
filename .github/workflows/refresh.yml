@@ -1,31 +1,144 @@
 name: refresh
+# v3 (data-branch architecture, proposal only):
+# - `data-publish` runs ONLY on the daily schedule and publishes ONLY the
+#   verified jobs JSON + pipeline-state.json + refresh-report.json to the
+#   `data` branch (three-file variant, report-persistence amendment).
+#   It never commits to main and never builds the frontend.
+# - `frontend-build` runs ONLY on manual workflow_dispatch and rebuilds the
+#   shell on main. It never runs the collector and never touches `data`.
+# - No push trigger (the old `refresh-*` rehearsal path is removed; rehearse
+#   with workflow_dispatch on a fork or a `refresh-*` branch run manually).
+# - No PAT, no new secrets. Both jobs use the built-in GITHUB_TOKEN with
+#   job-level `contents: write` only.
 on:
   workflow_dispatch: {}
   schedule:
     - cron: '17 2 * * *'   # daily 04:17 Africa/Cairo (02:17 UTC); off-the-hour to spread load
-  push:
-    branches: ['refresh-*']   # branch rehearsal: a FULL real refresh that writes only to this branch (data-release/<site>.json, index.html, refresh-report.json, pipeline-state.json); production deploys only from main after merge. main never self-triggers
-permissions:
-  contents: write
+
 concurrency:
   group: refresh-${{ github.repository }}
   cancel-in-progress: false
+
+env:
+  # Per-repo value: bapm | ai | marketing (this file ships with bapm).
+  SITE_SLUG: marketing
+
 jobs:
-  refresh:
-    if: github.actor != 'github-actions[bot]'
+  data-publish:
+    if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Record HEAD (no commit to main may appear)
+        run: echo "HEAD_BEFORE=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - name: Verify data branch exists (never create it here)
+        run: |
+          git ls-remote --exit-code --heads origin data \
+            || { echo "::error::data branch does not exist. Create it once from a correctly configured main (see PROPOSAL.md §E) and re-run."; exit 1; }
+      - name: Add data worktree
+        run: git worktree add /tmp/data-worktree origin/data
+      - name: Copy accepted state + previous release back (working-tree only)
+        run: |
+          # N-1: pipeline-state.json is the source of truth on `data`. Copy it
+          # back so collect.py merge_state / refresh.py see the accepted state.
+          # N-1b: same for the previous data-release JSON — refresh.py reads it
+          # as `prev` (same-day carry candidates, gate ratio vs previous
+          # snapshot). Without this, `prev` would be frozen at the pre-split
+          # copy on main and carry would silently stop working after day 1.
+          # Both copies are working-tree only and are restored at the end;
+          # nothing is committed to main.
+          if [ -f /tmp/data-worktree/pipeline/pipeline-state.json ]; then
+            cp /tmp/data-worktree/pipeline/pipeline-state.json pipeline/pipeline-state.json
+          fi
+          if [ -f "/tmp/data-worktree/pipeline/data-release/${SITE_SLUG}.json" ]; then
+            cp "/tmp/data-worktree/pipeline/data-release/${SITE_SLUG}.json" "pipeline/data-release/${SITE_SLUG}.json"
+          fi
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Run refresh (collect, classify, verify, rebuild)
-        run: python3 pipeline/refresh.py --site "marketing" --repo-root .
-      - name: Commit if changed
+      - name: Run refresh (collect, classify, verify — no build, no publish)
+        run: python3 pipeline/refresh.py --site "${SITE_SLUG}" --repo-root .
+      - name: Verify publish-ready marker + payload
+        run: |
+          MARKER="pipeline/.publish-ready-${SITE_SLUG}"
+          DATA="pipeline/data-release/${SITE_SLUG}.json"
+          test -f "$MARKER" || { echo "::error::no publish-ready marker — the gate did not pass or refresh failed"; exit 1; }
+          test -f "$DATA" || { echo "::error::no data file"; exit 1; }
+          GEN=$(python3 -c "import json;print(json.load(open('$DATA'))['generated_at'])")
+          test "$(cat "$MARKER")" = "$GEN" || { echo "::error::marker does not match payload generated_at"; exit 1; }
+          python3 - "$DATA" <<'PY'
+          import json, sys
+          p = json.load(open(sys.argv[1]))
+          assert isinstance(p.get("generated_at"), str) and p["generated_at"], "generated_at missing"
+          assert isinstance(p.get("jobs"), list), "jobs missing"
+          assert p.get("release_candidate") is True, "not a release candidate"
+          print("payload OK:", p["generated_at"], len(p["jobs"]), "jobs")
+          PY
+          rm -f "$MARKER"
+      - name: Publish verified JSON + state + report to data branch
+        run: |
+          DATA="pipeline/data-release/${SITE_SLUG}.json"
+          STATE="pipeline/pipeline-state.json"
+          REPORT="pipeline/refresh-report.json"
+          cp "$DATA" "/tmp/data-worktree/$DATA"
+          cp "$STATE" "/tmp/data-worktree/$STATE"
+          cp "$REPORT" "/tmp/data-worktree/$REPORT"
+          cd /tmp/data-worktree
+          git add "$DATA" "$STATE" "$REPORT"
+          STAGED=$(git diff --cached --name-only | sort)
+          EXPECTED=$(printf "%s\n%s\n%s" "$DATA" "$STATE" "$REPORT" | sort)
+          test "$STAGED" = "$EXPECTED" || { echo "::error::staged files are not exactly the JSON + state + report:"; echo "$STAGED"; exit 1; }
+          if git diff --cached --quiet; then
+            echo "no changes on data branch"
+          else
+            git -c user.name="career-refresh-bot" -c user.email="github-actions[bot]@users.noreply.github.com" \
+              commit -m "data: ${SITE_SLUG} $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            git push origin HEAD:data
+          fi
+      - name: Restore main checkout and verify no main commit
+        if: always()
+        run: |
+          git worktree remove --force /tmp/data-worktree || true
+          git checkout -- pipeline/pipeline-state.json "pipeline/data-release/${SITE_SLUG}.json" pipeline/refresh-report.json 2>/dev/null || true
+          rm -f "pipeline/.publish-ready-${SITE_SLUG}"
+          test "$(git rev-parse HEAD)" = "$HEAD_BEFORE" || { echo "::error::HEAD moved on main — a main commit was created"; exit 1; }
+          test -z "$(git status --porcelain --untracked-files=no)" || { echo "::error::tracked files modified on main checkout:"; git status --porcelain --untracked-files=no; exit 1; }
+
+  frontend-build:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build frontend shell (no jobs embedded)
+        run: python3 pipeline/repro_build.py "${SITE_SLUG}" .
+      - name: Verify shell has no embedded jobs
+        run: |
+          python3 - <<'PY'
+          s = open("index.html", encoding="utf-8").read()
+          assert "__DATA__" not in s, "shell still contains __DATA__"
+          assert '"jobs": [' not in s, "shell embeds a jobs payload"
+          print("shell OK, no embedded jobs,", len(s), "bytes")
+          PY
+      - name: Commit shell to main if changed
         run: |
           git config user.name "career-refresh-bot"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # stage ONLY the intended outputs of an accepted run (never pipeline-state.json.next or collected.json)
-          git add index.html "pipeline/data-release/marketing.json" pipeline/pipeline-state.json pipeline/refresh-report.json
-          if git diff --cached --quiet; then echo "no changes"; else git commit -m "refresh: $(date -u +%Y-%m-%dT%H:%M:%SZ)" && git push; fi
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "no frontend changes"
+          else
+            git commit -m "frontend: rebuild shell $(date -u +%Y-%m-%dT%H:%M:%SZ)" && git push
+          fi

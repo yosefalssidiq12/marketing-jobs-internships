@@ -12,6 +12,9 @@ TEMPLATE = (ROOT / "template.html").read_text(encoding="utf-8")
 SITES = {
     "bapm": {
         "key": "bapm",
+        "owner": "yosefalssidiq12",
+        "data_url": "https://raw.githubusercontent.com/yosefalssidiq12/ba-pm-jobs-internships/data/pipeline/data-release/bapm.json",
+        "data_fallback_url": "https://cdn.jsdelivr.net/gh/yosefalssidiq12/ba-pm-jobs-internships@data/pipeline/data-release/bapm.json",
         "sub_en_rel": "Business Analysis and Product Management jobs and internships, each individually checked against its live source on the snapshot date. Contradictory or missing evidence is marked, never guessed.",
         "sub_ar_rel": "وظائف وتدريبات تحليل الأعمال وإدارة المنتجات، كل إعلان فيها اتراجع مقابل مصدره الحي يوم اللقطة. أي دليل ناقص أو متضارب متوضح، ومش متخمن.",
         "repo": "ba-pm-jobs-internships",
@@ -28,6 +31,9 @@ SITES = {
     },
     "ai": {
         "key": "ai",
+        "owner": "yosefalssidiq12",
+        "data_url": "https://raw.githubusercontent.com/yosefalssidiq12/ai-automation-jobs-internships/data/pipeline/data-release/ai.json",
+        "data_fallback_url": "https://cdn.jsdelivr.net/gh/yosefalssidiq12/ai-automation-jobs-internships@data/pipeline/data-release/ai.json",
         "sub_en_rel": "Applied AI, automation, agents and vibe coding jobs and internships, judged by duties not titles; each individually checked against its live source on the snapshot date.",
         "sub_ar_rel": "وظائف وتدريبات الذكاء الاصطناعي التطبيقي والأتمتة والـvibe coding، بتتقاس بمهامها الفعلية مش بعناوينها؛ وكل إعلان اتحقق منه من مصدره الحي يوم اللقطة.",
         "repo": "ai-automation-jobs-internships",
@@ -44,6 +50,9 @@ SITES = {
     },
     "marketing": {
         "key": "marketing",
+        "owner": "yosefalssidiq12",
+        "data_url": "https://raw.githubusercontent.com/yosefalssidiq12/marketing-jobs-internships/data/pipeline/data-release/marketing.json",
+        "data_fallback_url": "https://cdn.jsdelivr.net/gh/yosefalssidiq12/marketing-jobs-internships@data/pipeline/data-release/marketing.json",
         "sub_en_rel": "Digital, performance, content, brand and growth marketing jobs and internships, each individually checked against its live source on the snapshot date. Contradictory or missing evidence is marked, never guessed.",
         "sub_ar_rel": "وظائف وتدريبات التسويق الرقمي والأداء والمحتوى والبراند والنمو، كل إعلان فيها اتراجع مقابل مصدره الحي يوم اللقطة. أي دليل ناقص أو متضارب متوضح، ومش متخمن.",
         "repo": "marketing-jobs-internships",
@@ -71,16 +80,18 @@ VERCEL_JSON = {
                 {"key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()"},
             ],
         }
-    ]
+    ],
+    "git": {"deploymentEnabled": {"data": False}},
 }
 
 # --- Shared rendering core (F8 build-safety fix, 2026-11-22) ---
 # Every placeholder with its REQUIRED occurrence count in the pristine template
-# and its output encoding. __DATA__ and __SITE_CONFIG__ embed JSON inside a
-# <script> block; the rest land in HTML text or double-quoted attribute
-# contexts (title/meta/brand appear multiple times by design - exact counts
-# below are the contract, so a missing OR duplicated token fails the build
-# before anything is written).
+# and its output encoding. __SITE_CONFIG__ embeds JSON inside a <script>
+# block; the rest land in HTML text or double-quoted attribute contexts
+# (title/meta/brand appear multiple times by design - exact counts below are
+# the contract, so a missing OR duplicated token fails the build before
+# anything is written). v3: __DATA__ was removed — the page fetches its jobs
+# JSON at runtime from the repo's `data` branch, so no job data is embedded.
 RENDER_TOKENS = {
     "__TITLE_EN__": (4, "html"),
     "__META_DESC__": (3, "html"),
@@ -89,7 +100,6 @@ RENDER_TOKENS = {
     "__PROD_URL__": (1, "html"),
     "__BRAND_EN__": (1, "html"),
     "__SITE_CONFIG__": (1, "json"),
-    "__DATA__": (1, "json"),
 }
 _RENDER_RE = re.compile("|".join(re.escape(t) for t in RENDER_TOKENS))
 
@@ -118,6 +128,8 @@ def render_page(template, html_values, json_values):
       a value literally containing a token string is left untouched.
     Raises ValueError on any token-count mismatch (caller must not write).
     """
+    if "__DATA__" in template:
+        raise ValueError("template still contains __DATA__ — remove the embedded-data block before building")
     bad = {t: template.count(t) for t, (want, _kind) in RENDER_TOKENS.items()
            if template.count(t) != want}
     if bad:
@@ -128,7 +140,13 @@ def render_page(template, html_values, json_values):
             table[tok] = _html.escape(str(html_values[tok]), quote=True)
         else:
             table[tok] = json_for_script(json_values[tok])
-    return _RENDER_RE.sub(lambda m: table[m.group(0)], template)
+    out = _RENDER_RE.sub(lambda m: table[m.group(0)], template)
+    if "__DATA__" in out:
+        raise ValueError("built output still contains __DATA__")
+    leftover = re.search(r"__[A-Z][A-Z0-9_]*__", out)
+    if leftover:
+        raise ValueError("unreplaced placeholder remains in output: %s" % leftover.group(0))
+    return out
 
 
 def write_atomic(path, text):
@@ -153,16 +171,21 @@ def html_values_for(cfg, sub_key):
 
 def build(site):
     cfg = SITES[site]
-    data = json.loads((ROOT / "data" / f"{site}.json").read_text(encoding="utf-8"))
+    # v3: no job data is loaded or embedded. The page fetches its JSON at
+    # runtime from the repo's `data` branch; build only renders the shell.
+    for k, needle in (("data_url", "/data/"), ("data_fallback_url", "@data/")):
+        v = cfg.get(k, "")
+        if needle not in v or not v.startswith("https://"):
+            raise ValueError("SITES[%r] is missing a valid %s (%r)" % (site, k, v))
     # Render and validate EVERYTHING before touching the output directory.
     out = render_page(TEMPLATE, html_values_for(cfg, "sub_en"),
-                      {"__SITE_CONFIG__": cfg, "__DATA__": data})
+                      {"__SITE_CONFIG__": cfg})
     vercel = json.dumps(VERCEL_JSON, indent=2)
     dist = ROOT.parent / "dist" / cfg["repo"]
     dist.mkdir(parents=True, exist_ok=True)
     write_atomic(dist / "index.html", out)
     write_atomic(dist / "vercel.json", vercel)
-    print(f"built {cfg['repo']}: {len(data['jobs'])} records, {len(out)} bytes")
+    print(f"built {cfg['repo']}: shell only (no embedded jobs), {len(out)} bytes")
 
 if __name__ == "__main__":
     for s in SITES:
