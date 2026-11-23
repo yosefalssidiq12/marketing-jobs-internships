@@ -243,6 +243,7 @@ footer.site b{color:var(--text)}
   .ctl-lbl{display:none}
   .theme-cycle{padding:6px 11px; font-size:12px; gap:7px}
   .theme-cycle .tdot{width:13px; height:13px}
+  .theme-cycle #theme-name{display:none}
   .sites{padding:0 14px 6px; gap:4px}
   .site-link{font-size:11.5px; padding:4px 9px}
   .hero{padding:28px 0 4px}
@@ -390,7 +391,7 @@ function setData(payload, stale){
 
 const I18N = {
 en:{
-  skip:"Skip to jobs", theme:"Theme", lang:"Language", get sub(){ return REL?(SITE.sub_en_rel||SITE.sub_en):PVM?(SITE.sub_en_pvm||SITE.sub_en):SITE.sub_en; },
+  skip:"Skip to jobs", theme:"Theme", lang:"Language", themes:{light:"Light",dark:"Dark",graphite:"Graphite",navy:"Navy"}, get sub(){ return REL?(SITE.sub_en_rel||SITE.sub_en):PVM?(SITE.sub_en_pvm||SITE.sub_en):SITE.sub_en; },
   snapshot:d=>REL?`Snapshot dated ${d}. Every listing was individually checked against its live source on the snapshot date — official status endpoint or listing-page check, labeled per card; listings may still have changed or closed since. Apply links open the original posting.`:PVM?`Snapshot dated ${d}. Collected from established public job APIs; listings may have changed or closed since. Each card shows its own verification state.`:`Snapshot dated ${d}. This is a dated, work-in-progress snapshot: listings may have changed or closed since. Availability has not been re-verified against live sources.`,
   searchPh:"Search title, company, city…", where:"Where", type:"Job type", place:"Workplace", sort:"Sort by",
   all:"All", clear:"Clear filters", csv:"Export CSV",
@@ -414,7 +415,7 @@ en:{
   regions:{"Egypt":"Egypt","UAE":"UAE","Saudi Arabia":"Saudi Arabia","Other Gulf":"Other Gulf","USA":"USA","USA & Canada":"USA & Canada","Europe":"Europe","Worldwide":"Remote world","Other":"Other"}
 },
 ar:{
-  skip:"انتقل للوظائف", theme:"المظهر", lang:"اللغة", get sub(){ return REL?(SITE.sub_ar_rel||SITE.sub_ar):PVM?(SITE.sub_ar_pvm||SITE.sub_ar):SITE.sub_ar; },
+  skip:"انتقل للوظائف", theme:"المظهر", lang:"اللغة", themes:{light:"فاتح",dark:"داكن",graphite:"جرافيت",navy:"كحلي"}, get sub(){ return REL?(SITE.sub_ar_rel||SITE.sub_ar):PVM?(SITE.sub_ar_pvm||SITE.sub_ar):SITE.sub_ar; },
   snapshot:d=>REL?`لقطة بتاريخ \u2066${d}\u2069. كل إعلان اتراجع مقابل مصدره الحي في تاريخ اللقطة — إما عبر نقطة الحالة الرسمية أو بفحص صفحة الإعلان، والطريقة موضحة على كل كارت؛ وممكن الإعلانات اتغيرت أو اتقفلت بعدها. زر التقديم يفتح الإعلان الأصلي.`:PVM?`لقطة بتاريخ \u2066${d}\u2069. متجمّعة من واجهات برمجية عامة موثقة المصدر؛ ممكن الإعلانات اتغيرت أو اتقفلت بعدها. كل كارت يوضح حالة التحقق الخاصة به.`:`لقطة بتاريخ \u2066${d}\u2069. دي لقطة مؤرخة وشغل تحت التطوير: ممكن الإعلانات اتغيرت أو اتقفلت بعدها. التوفر لم يُعَد التحقق منه مقابل المصادر الحية.`,
   searchPh:"دوّر بالمسمى أو الشركة أو المدينة…", where:"المكان", type:"نوع العمل", place:"نظام العمل", sort:"ترتيب",
   all:"الكل", clear:"مسح الفلاتر", csv:"تصدير CSV",
@@ -493,7 +494,7 @@ function applyTheme(){
   document.documentElement.dataset.theme = theme;
   document.documentElement.style.setProperty("--hue", SITE.hue);
   const tb = $("themebtn");
-  if (tb){ const cur = THEMES.find(x => x[0] === theme) || THEMES[1]; tb.dataset.t = cur[0]; const nm = $("theme-name"); if (nm) nm.textContent = cur[1]; tb.setAttribute("aria-label", I18N[lang].theme + ": " + cur[1]); }
+  if (tb){ const cur = THEMES.find(x => x[0] === theme) || THEMES[1]; const loc = (I18N[lang].themes || {})[cur[0]] || cur[1]; tb.dataset.t = cur[0]; const nm = $("theme-name"); if (nm) nm.textContent = loc; tb.setAttribute("aria-label", I18N[lang].theme + ": " + loc); }
   localStorage.setItem(THEMEKEY, theme);
 }
 function applyLang(){
@@ -530,6 +531,7 @@ function applyLang(){
     sn.appendChild(a);
   });
   sn.querySelectorAll("a").forEach(a => a.textContent = lang === "ar" ? a.dataset.ar : a.dataset.en);
+  applyTheme();
   if (DATA){ renderBreaks(); renderFilters(); render(); }
 }
 
