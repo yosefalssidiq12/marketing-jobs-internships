@@ -233,6 +233,23 @@ footer.site b{color:var(--text)}
   .specs{grid-template-columns:repeat(2,1fr)}
   .reset{margin-inline-start:0}
 }
+/* Mobile header fix (measured 390px: sticky header ~180px, ~20% of viewport).
+   No horizontal overflow was found at 360-420px: grid is 1 column, chips wrap,
+   cards fit. Only the header crowds, so only the header is changed here.
+   Desktop is untouched. */
+@media (max-width:760px){
+  .bar-in{padding:8px 14px; gap:8px}
+  .brand{font-size:15px}
+  .ctl-lbl{display:none}
+  .sw{width:28px; height:28px; padding:6px}
+  .sites{padding:0 14px 6px; gap:4px}
+  .site-link{font-size:11.5px; padding:4px 9px}
+  .hero{padding:28px 0 4px}
+  /* v2.1: compact rules live inside this query on purpose — a stale
+     .compact class must never hide nav on desktop. */
+  header.bar.compact .sites{display:none}
+  header.bar.compact .bar-in{padding:6px 14px}
+}
 .reveal{opacity:0; transform:translateY(14px); transition:opacity .55s var(--ease), transform .55s var(--ease)}
 .reveal.in{opacity:1; transform:none}
 details.archive{margin:0 0 40px; border:1px dashed var(--chip-brd); border-radius:var(--r-lg); padding:14px 18px}
@@ -370,6 +387,9 @@ en:{
   badgeNew:"New vs last published snapshot", badgeOld:"Also in last published snapshot", deadTag:"Link dead",
   remote:"Remote world", notStated:"See posting",
   emptyT:"No jobs match", emptyB:"Try removing a filter or a search word — every suggestion below has real results.",
+  emptySavedT:"No saved jobs yet", emptySavedB:"Tap Save on any card to keep it here. Saved jobs stay in this browser only.",
+  emptyAppliedT:"No applied jobs yet", emptyAppliedB:"Tap Mark applied on any card after you apply, to track it here.",
+  emptyHiddenT:"No hidden jobs", emptyHiddenB:"Tap Hide on any card to move it here. Hidden jobs are excluded from All jobs.",
   foot:(d,n)=>REL?`Verified snapshot data from ${d} · ${n} listings, each individually checked against its live source on the snapshot date (official status endpoint or listing-page check, labeled per card). Eligibility notes summarize what the original posting stated; they are not a legal eligibility determination. Saved lists and notes stay in this browser only — nothing leaves your device. `:PVM?`Snapshot data from ${d} · ${n} listings collected from established public job APIs; ${VERN} listing-verified, the rest fetched but not yet verified. Eligibility notes summarize what the original posting stated; they are not a legal eligibility determination. Saved lists and notes stay in this browser only — nothing leaves your device. `:`Verified snapshot data from ${d} · ${n} listings, each checked by hand at capture time and never re-verified since. Eligibility notes summarize what the original posting stated; they are not a legal eligibility determination. Saved lists and notes stay in this browser only — nothing leaves your device. `,
   sugKind:{Role:"Role",City:"City",Company:"Company"},
   regions:{"Egypt":"Egypt","UAE":"UAE","Saudi Arabia":"Saudi Arabia","Other Gulf":"Other Gulf","USA":"USA","USA & Canada":"USA & Canada","Europe":"Europe","Worldwide":"Remote world","Other":"Other"}
@@ -391,6 +411,9 @@ ar:{
   badgeNew:"جديد عن آخر لقطة منشورة", badgeOld:"موجود في آخر لقطة منشورة", deadTag:"رابط مغلق",
   remote:"عن بُعد عالمي", notStated:"انظر الإعلان",
   emptyT:"مفيش نتايج مطابقة", emptyB:"جرّب تشيل فلتر أو كلمة بحث — كل اقتراح تحته ليه نتايج حقيقية.",
+  emptySavedT:"لسه مفيش وظايف محفوظة", emptySavedB:"دوس احفظ على أي كارت عشان تحفظه هنا. الوظايف المحفوظة بتفضل في المتصفح ده بس.",
+  emptyAppliedT:"لسه مفيش وظايف قُدِّم عليها", emptyAppliedB:"بعد ما تقدم، دوس علّم كمُقدَّم على الكارت عشان تتبعها هنا.",
+  emptyHiddenT:"مفيش وظايف مخفية", emptyHiddenB:"دوس إخفاء على أي كارت عشان تنقلها هنا. الوظايف المخفية مش بتظهر في كل الوظائف.",
   foot:(d,n)=>REL?`بيانات موثقة بتاريخ \u2066${d}\u2069 · ${n} إعلان، كل واحد اتراجع مقابل مصدره الحي في تاريخ اللقطة (نقطة حالة رسمية أو فحص صفحة، والطريقة موضحة على الكارت). ملاحظات الأهلية بتلخص اللي الإعلان الأصلي ذكره؛ ومش حكم قانوني على الأهلية. القوائم المحفوظة والملاحظات بتفضل في متصفحك بس. `:PVM?`بيانات لقطة بتاريخ ${d} · ${n} إعلان متجمّع من واجهات برمجية عامة موثقة المصدر؛ ${VERN} منها متحقق على مستوى الإعلان، والباقي جُلب ولم يُتحقق منه بعد. ملاحظات الأهلية تلخص ما ورد في الإعلان الأصلي وليست فتوى أهلية. المحفوظات والملاحظات تبقى في هذا المتصفح فقط — لا شيء يغادر جهازك. `:`بيانات لقطة موثقة من ${d} · ${n} إعلان، كل واحد اتراجع يدويًا وقت الرصد ولم يُعَد التحقق منه من ساعتها. ملاحظات الأهلية بتلخص اللي الإعلان الأصلي ذكره، ومش حكم قانوني على الأهلية. القوائم المحفوظة والملاحظات بتفضل في المتصفح ده بس — مفيش حاجة بتسيب جهازك. `,
   sugKind:{Role:"مسمى",City:"مدينة",Company:"شركة"},
   regions:{"Egypt":"مصر","UAE":"الإمارات","Saudi Arabia":"السعودية","Other Gulf":"خليجي آخر","USA":"أمريكا","USA & Canada":"أمريكا وكندا","Europe":"أوروبا","Worldwide":"عن بُعد عالمي","Other":"أخرى"}
@@ -687,8 +710,15 @@ function render(){
   if (!v.length){
     const em = document.createElement("div"); em.className = "empty";
     const big = document.createElement("div"); big.className = "big"; big.textContent = "🔎"; em.appendChild(big);
-    const h2 = document.createElement("h2"); h2.textContent = t.emptyT; em.appendChild(h2);
-    const p = document.createElement("p"); p.textContent = t.emptyB; em.appendChild(p);
+    // Honest empty state: if the list itself is empty, say so; if the list
+    // has jobs but the search/filters exclude them all, use the generic copy.
+    let et = t.emptyT, eb = t.emptyB;
+    const inList = l => JOBS.filter(j => state[l][j.id]).length;
+    if (f.list === "saved" && !inList("saved")) { et = t.emptySavedT; eb = t.emptySavedB; }
+    else if (f.list === "applied" && !inList("applied")) { et = t.emptyAppliedT; eb = t.emptyAppliedB; }
+    else if (f.list === "hidden" && !inList("hidden")) { et = t.emptyHiddenT; eb = t.emptyHiddenB; }
+    const h2 = document.createElement("h2"); h2.textContent = et; em.appendChild(h2);
+    const p = document.createElement("p"); p.textContent = eb; em.appendChild(p);
     g.appendChild(em);
   } else {
     const frag = document.createDocumentFragment();
@@ -860,6 +890,11 @@ function loadData(){
 
 /* wiring */
 function init(){
+  const bar = document.querySelector("header.bar");
+  const syncCompact = () => { if (bar) bar.classList.toggle("compact", window.scrollY > 140 && matchMedia("(max-width: 760px)").matches); };
+  window.addEventListener("scroll", syncCompact, { passive:true });
+  window.addEventListener("resize", syncCompact);
+  syncCompact();
   const sw = $("swatches");
   [["light","Light"],["dark","Dark"],["graphite","Graphite"],["navy","Navy"]].forEach(([k, lbl]) => {
     const b = document.createElement("button");
