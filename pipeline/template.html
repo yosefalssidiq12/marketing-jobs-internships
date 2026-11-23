@@ -573,9 +573,15 @@ function chip(label, pressed, onclick, count){
   b.onclick = onclick;
   return b;
 }
+function viewOK(j){
+  if (f.list === "saved") return !!state.saved[j.id];
+  if (f.list === "applied") return !!state.applied[j.id];
+  if (f.list === "hidden") return !!state.hidden[j.id];
+  return !state.hidden[j.id];
+}
 function countWith(dim, val){
   const keep = f[dim]; f[dim] = val;
-  const n = JOBS.filter(matchF).length;
+  const n = JOBS.filter(j => viewOK(j) && matchF(j)).length;
   f[dim] = keep;
   return n;
 }
@@ -616,7 +622,7 @@ function matchSel(j){
     (f.place === "all" || j.workplace === f.place);
 }
 function buildSug(){
-  const cnt = w => JOBS.filter(j => matchSel(j) && matchQ(j, w)).length;
+  const cnt = w => JOBS.filter(j => viewOK(j) && matchSel(j) && matchQ(j, w)).length;
   const out = [];
   ROLE_WORDS.forEach(w => { const n = cnt(w); if (n) out.push({ text:w, kind:"Role", n }); });
   const cities = new Map(), cos = new Map();
