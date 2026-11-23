@@ -29,3 +29,9 @@ jobs:
           # stage ONLY the intended outputs of an accepted run (never pipeline-state.json.next or collected.json)
           git add index.html "pipeline/data-release/marketing.json" pipeline/pipeline-state.json pipeline/refresh-report.json
           if git diff --cached --quiet; then echo "no changes"; else git commit -m "refresh: $(date -u +%Y-%m-%dT%H:%M:%SZ)" && git push; fi
+      - name: Jooble Egypt internal discovery (prototype; internal store only, never published)
+        if: always()
+        continue-on-error: true
+        env:
+          JOOBLE_API_KEY: ${{ secrets.JOOBLE_API_KEY }}
+        run: python3 pipeline/jooble_collect.py --site "marketing"
