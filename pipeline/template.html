@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; font-src 'self'; form-action 'none'; base-uri 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src https://raw.githubusercontent.com https://cdn.jsdelivr.net; font-src 'self'; form-action 'none'; base-uri 'none'; object-src 'none'">
 <title>__TITLE_EN__</title>
 <meta name="description" content="__META_DESC__">
 <meta name="theme-color" content="__THEME_COLOR__">
@@ -218,6 +218,9 @@ header.bar{position:sticky; top:0; z-index:20; backdrop-filter:blur(14px); -webk
 .notes textarea:focus{border-color:var(--accent)}
 /* empty */
 .empty{grid-column:1/-1; text-align:center; padding:64px 20px; color:var(--muted)}
+/* v3: stale-data banner (shown only when the live fetch failed and a saved copy is displayed) */
+.stale{grid-column:1/-1; background:color-mix(in srgb, var(--warn) 12%, transparent); border:1px solid color-mix(in srgb, var(--warn) 30%, transparent); border-radius:var(--r-md); padding:10px 12px; margin:0 0 10px; font-size:13px; line-height:1.6}
+.stale button{font:inherit; font-weight:700; padding:6px 14px; border-radius:999px; cursor:pointer; background:var(--chip); color:var(--text); border:1px solid var(--chip-brd); margin-inline-start:10px}
 .empty .big{font-size:42px; margin-bottom:10px}
 .empty h2{color:var(--text); font-size:19px; margin:0 0 8px}
 /* footer */
@@ -287,7 +290,9 @@ details.archive .job{opacity:1; transform:none; filter:saturate(.55)}
     <span id="count" aria-live="polite"></span>
     <button class="btn export" id="csv" type="button">Export CSV</button>
   </div>
+  <div id="stale" class="stale" hidden></div>
   <div class="grid" id="grid"></div>
+  <noscript><p style="text-align:center;color:var(--muted);padding:24px 0">This page needs JavaScript to load the jobs. / هذه الصفحة تحتاج JavaScript لعرض الوظائف.</p></noscript>
   <details class="archive" id="archive" hidden>
     <summary id="archive-sum"></summary>
     <div class="grid" id="archive-grid" style="padding-top:14px"></div>
@@ -305,19 +310,52 @@ const SITENAV = [
   ["ai", "Applied AI", "الذكاء التطبيقي", "https://ai-automation-jobs-internships.vercel.app/"],
   ["marketing", "Marketing", "التسويق", "https://marketing-jobs-internships.vercel.app/"],
 ];
-const DATA = __DATA__;
-const ALL = DATA.jobs;
+/* v3 runtime data (data-branch architecture): jobs are NO LONGER embedded
+   at build time. The page fetches the per-site JSON from the repo's `data`
+   branch on every visit (raw.githubusercontent.com, jsDelivr fallback).
+   DATA_URL / DATA_FALLBACK_URL come from the site config (owner/repo/key
+   set in build.py SITES) — no new build placeholder was added. */
+const DATA_URL = SITE.data_url;
+const DATA_FALLBACK_URL = SITE.data_fallback_url;
+const DATA_CACHE_KEY = "ci-data-" + SITE.key + "-v1";
+const FETCH_TIMEOUT_MS = 10000;
+const ISO_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
+const AR_DIGITS = {"0":"٠","1":"١","2":"٢","3":"٣","4":"٤","5":"٥","6":"٦","7":"٧","8":"٨","9":"٩"};
+const arDigits = s => String(s).replace(/[0-9]/g, d => AR_DIGITS[d]);
+/* Freshness: the JSON's own generated_at, formatted exactly like the
+   pipeline's `updated` field ("YYYY-MM-DD HH:MM UTC"); Arabic uses
+   Arabic-Indic digits, matching refresh.py ar_date(). Never browser time. */
+function fmtUtc(iso){ const d = new Date(iso); if (isNaN(d.getTime())) return String(iso);
+  const p = n => (n < 10 ? "0" : "") + n;
+  return d.getUTCFullYear() + "-" + p(d.getUTCMonth() + 1) + "-" + p(d.getUTCDate()) + " " + p(d.getUTCHours()) + ":" + p(d.getUTCMinutes()) + " UTC"; }
+function fmtUtcAr(iso){ return arDigits(fmtUtc(iso)); }
+function snapTs(){ return DATA && DATA.generated_at ? (lang === "ar" ? fmtUtcAr(DATA.generated_at) : fmtUtc(DATA.generated_at)) : ""; }
+let DATA = null;
+let ALL = [];
 const isDead = j => j.link_status && String(j.link_status).startsWith("dead");
-const JOBS = ALL.filter(j => !isDead(j));
-const PVM = DATA.verification_model === "pipeline";
-const REL = DATA.release_candidate === true;
-const VERN = PVM ? JOBS.filter(j => j.verified === true).length : JOBS.length;
-const ARCHIVED = ALL.filter(j => isDead(j));
+let JOBS = [];
+let PVM = false;
+let REL = false;
+let VERN = 0;
+let ARCHIVED = [];
+let DATA_STALE = false;
+let DATA_ERROR = null;
+function setData(payload, stale){
+  DATA = payload;
+  ALL = Array.isArray(payload.jobs) ? payload.jobs : [];
+  JOBS = ALL.filter(j => !isDead(j));
+  PVM = payload.verification_model === "pipeline";
+  REL = payload.release_candidate === true;
+  VERN = PVM ? JOBS.filter(j => j.verified === true).length : JOBS.length;
+  ARCHIVED = ALL.filter(j => isDead(j));
+  DATA_STALE = !!stale;
+  DATA_ERROR = null;
+}
 
 const I18N = {
 en:{
-  skip:"Skip to jobs", theme:"Theme", lang:"Language", sub:REL?(SITE.sub_en_rel||SITE.sub_en):PVM?(SITE.sub_en_pvm||SITE.sub_en):SITE.sub_en,
-  snapshot:d=>REL?`Snapshot dated ${d} (UTC). Every listing was individually checked against its live source on the snapshot date — official status endpoint or listing-page check, labeled per card; listings may still have changed or closed since. Apply links open the original posting.`:PVM?`Snapshot dated ${d} (UTC). Collected from established public job APIs; listings may have changed or closed since. Each card shows its own verification state.`:`Snapshot dated ${d} (UTC). This is a dated, work-in-progress snapshot: listings may have changed or closed since. Availability has not been re-verified against live sources.`,
+  skip:"Skip to jobs", theme:"Theme", lang:"Language", get sub(){ return REL?(SITE.sub_en_rel||SITE.sub_en):PVM?(SITE.sub_en_pvm||SITE.sub_en):SITE.sub_en; },
+  snapshot:d=>REL?`Snapshot dated ${d}. Every listing was individually checked against its live source on the snapshot date — official status endpoint or listing-page check, labeled per card; listings may still have changed or closed since. Apply links open the original posting.`:PVM?`Snapshot dated ${d}. Collected from established public job APIs; listings may have changed or closed since. Each card shows its own verification state.`:`Snapshot dated ${d}. This is a dated, work-in-progress snapshot: listings may have changed or closed since. Availability has not been re-verified against live sources.`,
   searchPh:"Search title, company, city…", where:"Where", type:"Job type", place:"Workplace", sort:"Sort by",
   all:"All", clear:"Clear filters", csv:"Export CSV",
   sorts:{recent:"Recently posted",oldest:"Oldest posted",intern:"Internships first",comp:"Least competition"},
@@ -337,8 +375,8 @@ en:{
   regions:{"Egypt":"Egypt","UAE":"UAE","Saudi Arabia":"Saudi Arabia","Other Gulf":"Other Gulf","USA":"USA","USA & Canada":"USA & Canada","Europe":"Europe","Worldwide":"Remote world","Other":"Other"}
 },
 ar:{
-  skip:"انتقل للوظائف", theme:"المظهر", lang:"اللغة", sub:REL?(SITE.sub_ar_rel||SITE.sub_ar):PVM?(SITE.sub_ar_pvm||SITE.sub_ar):SITE.sub_ar,
-  snapshot:d=>REL?`لقطة بتاريخ \u2066${d}\u2069 · (UTC). كل إعلان اتراجع مقابل مصدره الحي في تاريخ اللقطة — إما عبر نقطة الحالة الرسمية أو بفحص صفحة الإعلان، والطريقة موضحة على كل كارت؛ وممكن الإعلانات اتغيرت أو اتقفلت بعدها. زر التقديم يفتح الإعلان الأصلي.`:PVM?`لقطة بتاريخ \u2066${d}\u2069 · (UTC). متجمّعة من واجهات برمجية عامة موثقة المصدر؛ ممكن الإعلانات اتغيرت أو اتقفلت بعدها. كل كارت يوضح حالة التحقق الخاصة به.`:`لقطة بتاريخ \u2066${d}\u2069 · (UTC). دي لقطة مؤرخة وشغل تحت التطوير: ممكن الإعلانات اتغيرت أو اتقفلت بعدها. التوفر لم يُعَد التحقق منه مقابل المصادر الحية.`,
+  skip:"انتقل للوظائف", theme:"المظهر", lang:"اللغة", get sub(){ return REL?(SITE.sub_ar_rel||SITE.sub_ar):PVM?(SITE.sub_ar_pvm||SITE.sub_ar):SITE.sub_ar; },
+  snapshot:d=>REL?`لقطة بتاريخ \u2066${d}\u2069. كل إعلان اتراجع مقابل مصدره الحي في تاريخ اللقطة — إما عبر نقطة الحالة الرسمية أو بفحص صفحة الإعلان، والطريقة موضحة على كل كارت؛ وممكن الإعلانات اتغيرت أو اتقفلت بعدها. زر التقديم يفتح الإعلان الأصلي.`:PVM?`لقطة بتاريخ \u2066${d}\u2069. متجمّعة من واجهات برمجية عامة موثقة المصدر؛ ممكن الإعلانات اتغيرت أو اتقفلت بعدها. كل كارت يوضح حالة التحقق الخاصة به.`:`لقطة بتاريخ \u2066${d}\u2069. دي لقطة مؤرخة وشغل تحت التطوير: ممكن الإعلانات اتغيرت أو اتقفلت بعدها. التوفر لم يُعَد التحقق منه مقابل المصادر الحية.`,
   searchPh:"دوّر بالمسمى أو الشركة أو المدينة…", where:"المكان", type:"نوع العمل", place:"نظام العمل", sort:"ترتيب",
   all:"الكل", clear:"مسح الفلاتر", csv:"تصدير CSV",
   sorts:{recent:"الأحدث نشرًا",oldest:"الأقدم نشرًا",intern:"التدريبات أولًا",comp:"الأقل منافسة"},
@@ -376,7 +414,10 @@ function platformOf(url){
     if (h.includes(p + ".")) return p === "naukrigulf" ? "NaukriGulf" : p[0].toUpperCase() + p.slice(1);
   return "Company site";
 }
-const safeUrl = u => /^https:\/\//i.test(String(u || "")) ? u : null;
+const safeUrl = u => { const s = String(u || "").trim();
+  if (!/^https?:\/\//i.test(s)) return null;
+  try { const p = new URL(s); return (p.protocol === "http:" || p.protocol === "https:") ? s : null; }
+  catch(e){ return null; } };
 
 /* state */
 let state = { saved:{}, applied:{}, hidden:{}, notes:{} };
@@ -422,13 +463,18 @@ function applyLang(){
   $("theme-lbl").textContent = t.theme;
   $("lang-lbl").textContent = t.lang;
   $("sub").textContent = t.sub;
-  $("snap").innerHTML = esc(t.snapshot(DATA.date));
+  $("snap").textContent = DATA ? t.snapshot(snapTs()) : (lang === "ar" ? "جارٍ تحميل أحدث الوظائف…" : "Loading latest jobs…");
   $("q").placeholder = t.searchPh;
   $("q").setAttribute("aria-label", t.searchPh);
   $("l-where").textContent = t.where; $("l-type").textContent = t.type;
   $("l-place").textContent = t.place; $("l-sort").textContent = t.sort;
   $("reset").textContent = t.clear; $("csv").textContent = t.csv;
-  $("foot").innerHTML = "<b>" + esc(SITE["brand_" + lang]) + "</b> — " + esc(t.foot(DATA.date, JOBS.length));
+  const footEl = $("foot");
+  footEl.textContent = "";
+  const fb = document.createElement("b");
+  fb.textContent = SITE["brand_" + lang];
+  footEl.appendChild(fb);
+  footEl.appendChild(document.createTextNode(" — " + (DATA ? t.foot(snapTs(), JOBS.length) : (lang === "ar" ? "جارٍ تحميل أحدث الوظائف…" : "Loading latest jobs…"))));
   document.querySelectorAll("#langseg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.l === lang)));
   localStorage.setItem(LANGKEY, lang);
   const sn = $("sites");
@@ -440,7 +486,7 @@ function applyLang(){
     sn.appendChild(a);
   });
   sn.querySelectorAll("a").forEach(a => a.textContent = lang === "ar" ? a.dataset.ar : a.dataset.en);
-  renderBreaks(); renderFilters(); render();
+  if (DATA){ renderBreaks(); renderFilters(); render(); }
 }
 
 /* filtering */
@@ -475,33 +521,34 @@ function visible(){
 function chip(label, pressed, onclick, count){
   const b = document.createElement("button");
   b.type = "button"; b.className = "chip"; b.setAttribute("aria-pressed", String(pressed));
-  b.innerHTML = esc(label) + (count != null ? ` <span class="c">${count}</span>` : "");
+  b.textContent = label;
+  if (count != null){ b.appendChild(document.createTextNode(" ")); const cs = document.createElement("span"); cs.className = "c"; cs.textContent = String(count); b.appendChild(cs); }
   b.onclick = onclick;
   return b;
 }
 function renderFilters(){
   const t = I18N[lang];
-  const reg = $("f-region"); reg.innerHTML = "";
+  const reg = $("f-region"); reg.textContent = "";
   reg.appendChild(chip(t.all, f.region === "all", () => { f.region = "all"; renderFilters(); render(); }));
   REGORD.filter(r => JOBS.some(j => j.region === r)).forEach(r => {
     const n = JOBS.filter(j => j.region === r).length;
     reg.appendChild(chip(t.regions[r] || r, f.region === r, () => { f.region = r; renderFilters(); render(); }, n));
   });
-  const ty = $("f-type"); ty.innerHTML = "";
+  const ty = $("f-type"); ty.textContent = "";
   ty.appendChild(chip(t.all, f.type === "all", () => { f.type = "all"; renderFilters(); render(); }));
   TYPORD.filter(x => JOBS.some(j => j.type === x)).forEach(x => {
     ty.appendChild(chip(tv(x), f.type === x, () => { f.type = x; renderFilters(); render(); }));
   });
-  const pl = $("f-place"); pl.innerHTML = "";
+  const pl = $("f-place"); pl.textContent = "";
   pl.appendChild(chip(t.all, f.place === "all", () => { f.place = "all"; renderFilters(); render(); }));
   PLCORD.filter(x => JOBS.some(j => j.workplace === x)).forEach(x => {
     const lbl = tv(x);
     pl.appendChild(chip(lbl, f.place === x, () => { f.place = x; renderFilters(); render(); }));
   });
-  const so = $("f-sort"); so.innerHTML = "";
+  const so = $("f-sort"); so.textContent = "";
   for (const k of ["recent","oldest","intern","comp"])
     so.appendChild(chip(t.sorts[k], f.sort === k, () => { f.sort = k; renderFilters(); render(); }));
-  const li = $("f-list"); li.innerHTML = "";
+  const li = $("f-list"); li.textContent = "";
   const counts = { saved:Object.keys(state.saved).length, applied:Object.keys(state.applied).length, hidden:Object.keys(state.hidden).length };
   li.appendChild(chip(t.lists.all, f.list === "all", () => { f.list = "all"; renderFilters(); render(); }));
   li.appendChild(chip(t.lists.saved, f.list === "saved", () => { f.list = "saved"; renderFilters(); render(); }, counts.saved || null));
@@ -527,11 +574,13 @@ let SUG = [];
 let sugIdx = -1;
 function renderSug(list){
   const t = I18N[lang], s = $("sug");
-  s.innerHTML = ""; sugIdx = -1; $("q").removeAttribute("aria-activedescendant");
+  s.textContent = ""; sugIdx = -1; $("q").removeAttribute("aria-activedescendant");
   list.slice(0,9).forEach((x, i) => {
     const b = document.createElement("button");
     b.type = "button"; b.setAttribute("role","option"); b.id = "sug-opt-" + i; b.setAttribute("aria-selected","false");
-    b.innerHTML = `<span>${esc(x.text)}</span><span class="k">${esc(t.sugKind[x.kind])}</span><span class="n">${x.n}</span>`;
+    const s1 = document.createElement("span"); s1.textContent = x.text; b.appendChild(s1);
+    const s2 = document.createElement("span"); s2.className = "k"; s2.textContent = t.sugKind[x.kind]; b.appendChild(s2);
+    const s3 = document.createElement("span"); s3.className = "n"; s3.textContent = String(x.n); b.appendChild(s3);
     b.onclick = () => { $("q").value = x.text; f.q = x.text; closeSug(); render(); };
     s.appendChild(b);
   });
@@ -557,50 +606,90 @@ function card(j, n){
   const dead = j.link_status && String(j.link_status).startsWith("dead");
   const url = safeUrl(j.url);
   const initials = (j.company || "?").trim().replace(/\.$/,"").split(/\s+/).map(w=>w[0]).join("").slice(0,2).toUpperCase();
-  el.innerHTML = `
-    <div class="job-top">
-      <span class="job-n">${n}</span>
-      <span class="tag">${esc(t.regions[j.region] || j.region)}</span>
-      <span class="badge ${isNew ? "new" : "old"}">${isNew ? esc(t.badgeNew) : esc(t.badgeOld)}</span>
-      ${dead ? `<span class="badge dead">${esc(t.deadTag)}</span>` : ""}
-      <span class="job-src">${esc(j.source === "Company careers" ? "Company site" : j.source)}</span>
-    </div>
-    <h3>${esc(j.title)}</h3>
-    <div class="co"><span class="av" aria-hidden="true">${esc(initials)}</span><span>${esc((j.company||"").replace(/\.$/,""))} · ${esc(j.location || "")}</span></div>
-    <div class="specs">
-      <div class="spec"><div class="k">${esc(t.workplace)}</div><div class="v">${esc(tv(stated(j.workplace, t)))}</div></div>
-      <div class="spec"><div class="k">${esc(t.jtype)}</div><div class="v">${esc(tv(stated(j.type, t)))}</div></div>
-      <div class="spec"><div class="k">${esc(t.seniority)}</div><div class="v">${esc(tv(j.level || "—"))}</div></div>
-    </div>
-    <div class="dates"><span>${esc(t.posted)}: <b><bdi>${esc(j.posted || "—")}</bdi></b></span><span>${esc(t.first)}: <b><bdi>${esc(j.first_seen || "—")}</bdi></b></span>${j.applicants ? `<span>${esc(lang==="ar"?"متقدم":"Applicants")}: <b>${esc(j.applicants)}</b></span>` : ""}</div>
-    ${j.note ? `<div class="note"><b>${esc(lang==="ar"?"تنبيه من الإعلان":"Check the posting")}</b>${esc(j.note)}</div>` : ""}
-    ${j.elig ? `<div class="elig"><b>${esc(lang==="ar"?"الأهلية:":"Eligibility:")}</b> ${esc(tv(typeof j.elig === "string" ? j.elig : (j.elig[lang] || j.elig.en || "")))}</div>` : ""}
-    <div class="actions">
-      ${url ? `<a class="apply" href="${esc(url)}" target="_blank" rel="noopener noreferrer nofollow">${esc(t.open(platformOf(j.url)))} <span class="ext">↗</span></a>` : ""}
-      <span class="avail">${esc(dead ? t.availDead : (REL ? (lang==="ar" ? (j.vlabel_ar||j.vlabel||t.avail) : (j.vlabel||t.avail)) : t.avail))}</span>
-    </div>
-    <div class="mini">
-      <button type="button" data-a="save" class="${state.saved[j.id] ? "on" : ""}">${state.saved[j.id] ? esc(t.saved) : esc(t.save)}</button>
-      <button type="button" data-a="applied" class="${state.applied[j.id] ? "on" : ""}">${state.applied[j.id] ? esc(t.appliedOn) : esc(t.applied)}</button>
-      <button type="button" data-a="hide">${state.hidden[j.id] ? esc(t.hidden) : esc(t.hide)}</button>
-      <button type="button" data-a="note">${esc(t.note)}</button>
-    </div>
-    <div class="notes" hidden><textarea aria-label="${esc(t.note)}" placeholder="${esc(t.notePh)}">${esc(state.notes[j.id] || "")}</textarea></div>`;
+  /* job-top */
+  const top = document.createElement("div"); top.className = "job-top"; el.appendChild(top);
+  const jn = document.createElement("span"); jn.className = "job-n"; jn.textContent = String(n); top.appendChild(jn);
+  const tag = document.createElement("span"); tag.className = "tag"; tag.textContent = t.regions[j.region] || j.region; top.appendChild(tag);
+  const badge = document.createElement("span"); badge.className = "badge " + (isNew ? "new" : "old"); badge.textContent = isNew ? t.badgeNew : t.badgeOld; top.appendChild(badge);
+  if (dead){ const db = document.createElement("span"); db.className = "badge dead"; db.textContent = t.deadTag; top.appendChild(db); }
+  const src = document.createElement("span"); src.className = "job-src"; src.textContent = j.source === "Company careers" ? "Company site" : j.source; top.appendChild(src);
+  /* title + company */
+  const h3 = document.createElement("h3"); h3.textContent = j.title; el.appendChild(h3);
+  const co = document.createElement("div"); co.className = "co"; el.appendChild(co);
+  const av = document.createElement("span"); av.className = "av"; av.setAttribute("aria-hidden", "true"); av.textContent = initials; co.appendChild(av);
+  const coTxt = document.createElement("span"); coTxt.textContent = (j.company || "").replace(/\.$/,"") + " · " + (j.location || ""); co.appendChild(coTxt);
+  /* specs */
+  const specs = document.createElement("div"); specs.className = "specs"; el.appendChild(specs);
+  const specRows = [[t.workplace, tv(stated(j.workplace, t))], [t.jtype, tv(stated(j.type, t))], [t.seniority, tv(j.level || "—")]];
+  for (const [k, v] of specRows){
+    const sp = document.createElement("div"); sp.className = "spec"; specs.appendChild(sp);
+    const kk = document.createElement("div"); kk.className = "k"; kk.textContent = k; sp.appendChild(kk);
+    const vv = document.createElement("div"); vv.className = "v"; vv.textContent = v; sp.appendChild(vv);
+  }
+  /* dates */
+  const dates = document.createElement("div"); dates.className = "dates"; el.appendChild(dates);
+  const d1 = document.createElement("span"); d1.appendChild(document.createTextNode(t.posted + ": "));
+  const b1 = document.createElement("b"); const bdi1 = document.createElement("bdi"); bdi1.textContent = j.posted || "—"; b1.appendChild(bdi1); d1.appendChild(b1); dates.appendChild(d1);
+  const d2 = document.createElement("span"); d2.appendChild(document.createTextNode(t.first + ": "));
+  const b2 = document.createElement("b"); const bdi2 = document.createElement("bdi"); bdi2.textContent = j.first_seen || "—"; b2.appendChild(bdi2); d2.appendChild(b2); dates.appendChild(d2);
+  if (j.applicants){
+    const d3 = document.createElement("span"); d3.appendChild(document.createTextNode((lang === "ar" ? "متقدم" : "Applicants") + ": "));
+    const b3 = document.createElement("b"); b3.textContent = j.applicants; d3.appendChild(b3); dates.appendChild(d3);
+  }
+  /* note / eligibility */
+  if (j.note){
+    const note = document.createElement("div"); note.className = "note"; el.appendChild(note);
+    const nb = document.createElement("b"); nb.textContent = lang === "ar" ? "تنبيه من الإعلان" : "Check the posting"; note.appendChild(nb);
+    note.appendChild(document.createTextNode(j.note));
+  }
+  if (j.elig){
+    const eg = document.createElement("div"); eg.className = "elig"; el.appendChild(eg);
+    const eb = document.createElement("b"); eb.textContent = lang === "ar" ? "الأهلية:" : "Eligibility:"; eg.appendChild(eb);
+    eg.appendChild(document.createTextNode(" " + tv(typeof j.elig === "string" ? j.elig : (j.elig[lang] || j.elig.en || ""))));
+  }
+  /* actions */
+  const actions = document.createElement("div"); actions.className = "actions"; el.appendChild(actions);
+  if (url){
+    const a = document.createElement("a"); a.className = "apply"; a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer nofollow";
+    a.appendChild(document.createTextNode(t.open(platformOf(j.url)) + " "));
+    const ext = document.createElement("span"); ext.className = "ext"; ext.textContent = "↗"; a.appendChild(ext);
+    actions.appendChild(a);
+  }
+  const avail = document.createElement("span"); avail.className = "avail";
+  avail.textContent = dead ? t.availDead : (REL ? (lang === "ar" ? (j.vlabel_ar || j.vlabel || t.avail) : (j.vlabel || t.avail)) : t.avail);
+  actions.appendChild(avail);
+  /* mini buttons + notes */
+  const mini = document.createElement("div"); mini.className = "mini"; el.appendChild(mini);
+  const miniBtns = [
+    ["save", state.saved[j.id] ? "on" : "", state.saved[j.id] ? t.saved : t.save],
+    ["applied", state.applied[j.id] ? "on" : "", state.applied[j.id] ? t.appliedOn : t.applied],
+    ["hide", "", state.hidden[j.id] ? t.hidden : t.hide],
+    ["note", "", t.note],
+  ];
+  for (const [a, cls, lbl] of miniBtns){
+    const b = document.createElement("button"); b.type = "button"; b.dataset.a = a; if (cls) b.className = cls; b.textContent = lbl; mini.appendChild(b);
+  }
+  const notes = document.createElement("div"); notes.className = "notes"; notes.hidden = true; el.appendChild(notes);
+  const ta = document.createElement("textarea"); ta.setAttribute("aria-label", t.note); ta.placeholder = t.notePh; ta.value = state.notes[j.id] || ""; notes.appendChild(ta);
   el.querySelector('[data-a="save"]').onclick = () => { state.saved[j.id] ? delete state.saved[j.id] : state.saved[j.id] = 1; persist(); renderFilters(); render(); };
   el.querySelector('[data-a="applied"]').onclick = () => { state.applied[j.id] ? delete state.applied[j.id] : state.applied[j.id] = 1; persist(); renderFilters(); render(); };
   el.querySelector('[data-a="hide"]').onclick = () => { state.hidden[j.id] ? delete state.hidden[j.id] : state.hidden[j.id] = 1; persist(); renderFilters(); render(); };
-  const nw = el.querySelector(".notes");
-  el.querySelector('[data-a="note"]').onclick = () => { nw.hidden = !nw.hidden; if (!nw.hidden) nw.querySelector("textarea").focus(); };
-  nw.querySelector("textarea").oninput = e => { state.notes[j.id] = e.target.value; persist(); };
+  el.querySelector('[data-a="note"]').onclick = () => { notes.hidden = !notes.hidden; if (!notes.hidden) ta.focus(); };
+  ta.oninput = e => { state.notes[j.id] = e.target.value; persist(); };
   return el;
 }
 function render(){
+  if (!DATA) return;
   const t = I18N[lang];
   const v = visible();
   const g = $("grid");
-  g.innerHTML = "";
+  g.textContent = "";
   if (!v.length){
-    g.innerHTML = `<div class="empty"><div class="big">🔎</div><h2>${esc(t.emptyT)}</h2><p>${esc(t.emptyB)}</p></div>`;
+    const em = document.createElement("div"); em.className = "empty";
+    const big = document.createElement("div"); big.className = "big"; big.textContent = "🔎"; em.appendChild(big);
+    const h2 = document.createElement("h2"); h2.textContent = t.emptyT; em.appendChild(h2);
+    const p = document.createElement("p"); p.textContent = t.emptyB; em.appendChild(p);
+    g.appendChild(em);
   } else {
     const frag = document.createDocumentFragment();
     v.forEach((j, i) => frag.appendChild(card(j, i + 1)));
@@ -610,43 +699,48 @@ function render(){
     g.querySelectorAll(".job").forEach((el, i) => { el.style.transitionDelay = Math.min(i * 35, 350) + "ms"; io.observe(el); });
   }
   const intern = JOBS.filter(j => j.type === "Internship").length;
-  $("count").innerHTML = `<b>${v.length}</b> / ${JOBS.length} · ${esc(t.internships(intern))}`;
+  const countEl = $("count"); countEl.textContent = "";
+  const cb = document.createElement("b"); cb.textContent = String(v.length); countEl.appendChild(cb);
+  countEl.appendChild(document.createTextNode(" / " + JOBS.length + " · " + t.internships(intern)));
   const arc = $("archive");
   if (ARCHIVED.length){
     arc.hidden = false;
     const va = ARCHIVED.filter(matchF);
     $("archive-sum").textContent = t.archive(ARCHIVED.length) + (va.length !== ARCHIVED.length ? " · " + t.arcMatch(va.length) : "");
     const ag = $("archive-grid");
-    ag.innerHTML = "";
+    ag.textContent = "";
     va.forEach((j, i) => ag.appendChild(card(j, "A" + (i + 1))));
   }
 }
 
 /* breakdown */
+function setBchip(el, n, lbl){ el.textContent = ""; const b = document.createElement("b"); b.dataset.n = String(n); b.textContent = "0"; el.appendChild(b); const sp = document.createElement("span"); sp.textContent = lbl; el.appendChild(sp); }
 function renderBreaks(){
+  if (!DATA) return;
   const t = I18N[lang];
   const b = $("breaks");
-  b.innerHTML = "";
+  b.textContent = "";
   const groups = [[lang==="ar"?"مصر":"Egypt", r => r === "Egypt"], [lang==="ar"?"الخليج":"Gulf", r => ["UAE","Saudi Arabia","Other Gulf"].includes(r)], [lang==="ar"?"أمريكا وأوروبا":"US & Europe", r => ["USA","USA & Canada","Europe"].includes(r)], [t.remote, r => r === "Worldwide"]];
   groups.forEach(([lbl, fn]) => {
     const n = JOBS.filter(j => fn(j.region)).length;
     if (!n) return;
     const s = document.createElement("span");
     s.className = "bchip";
-    s.innerHTML = `<b data-n="${n}">0</b><span>${esc(lbl)}</span>`;
+    const _b = document.createElement("b"); _b.dataset.n = String(n); _b.textContent = "0"; s.appendChild(_b);
+    const _sp = document.createElement("span"); _sp.textContent = lbl; s.appendChild(_sp);
     b.appendChild(s);
   });
   const tot = document.createElement("span");
   tot.className = "bchip";
   if(REL){const ep=JOBS.filter(j=>j.verification_method==="jobicy_status_endpoint").length, bc=JOBS.filter(j=>j.verification_method==="bounded_content_check").length, br=JOBS.filter(j=>j.verification_method==="browser_page_check").length, unk=JOBS.length-ep-bc-br;
   const mTxt=(n,ar,en)=>n>0?` · ${n} ${lang==="ar"?ar:en}`:"";
-  tot.innerHTML = `<b data-n="${JOBS.length}">0</b><span>${esc((lang==="ar"?"إجمالي":"total")+mTxt(ep,"عبر نقطة الحالة الرسمية","status-endpoint")+mTxt(bc,"بفحص نص الإعلان آليًا","listing-checked")+mTxt(br,"بمراجعة متصفح يدوية","browser-reviewed")+mTxt(unk,"بمنهج تحقق غير معروف","unknown-method"))}</span>`;
- } else tot.innerHTML = PVM ? `<b data-n="${VERN}">0</b><span>${esc(lang==="ar"?"موثق فعليًا":"listing-verified")}</span>` : `<b data-n="${JOBS.length}">0</b><span>${esc(lang==="ar"?"إجمالي موثق":"total verified")}</span>`;
+  setBchip(tot, JOBS.length, (lang==="ar"?"إجمالي":"total")+mTxt(ep,"عبر نقطة الحالة الرسمية","status-endpoint")+mTxt(bc,"بفحص نص الإعلان آليًا","listing-checked")+mTxt(br,"بمراجعة متصفح يدوية","browser-reviewed")+mTxt(unk,"بمنهج تحقق غير معروف","unknown-method"));
+ } else if (PVM) setBchip(tot, VERN, lang==="ar"?"موثق فعليًا":"listing-verified"); else setBchip(tot, JOBS.length, lang==="ar"?"إجمالي موثق":"total verified");
   b.appendChild(tot);
   if (PVM && JOBS.length - VERN > 0){
     const pend = document.createElement("span");
     pend.className = "bchip";
-    pend.innerHTML = `<b data-n="${JOBS.length - VERN}">0</b><span>${esc(lang==="ar"?"بانتظار التوثيق":"awaiting verification")}</span>`;
+    setBchip(pend, JOBS.length - VERN, lang==="ar"?"بانتظار التوثيق":"awaiting verification");
     b.appendChild(pend);
   }
 }
@@ -661,15 +755,107 @@ function animateCounts(){
 
 /* csv */
 function csv(){
+  if (!DATA) return;
   const v = visible();
   const rows = [["title","company","location","region","workplace","type","posted","first_seen","source","url","availability"]];
   v.forEach(j => rows.push([j.title,(j.company||"").replace(/\.$/,""),j.location,j.region,j.workplace,j.type,j.posted||"",j.first_seen||"",j.source,j.url, j.link_status ? "reported closed 2026-11-21" : (j.vlabel || "not verified")]));
   const text = rows.map(r => r.map(x => `"${String(x ?? "").replace(/"/g,'""')}"`).join(",")).join("\r\n");
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob(["﻿" + text], { type:"text/csv;charset=utf-8" }));
-  a.download = SITE.key + "-jobs-" + DATA.date + ".csv";
+  a.download = SITE.key + "-jobs-" + (DATA.generated_at || "").slice(0, 10) + ".csv";
   a.click();
   URL.revokeObjectURL(a.href);
+}
+
+
+/* v3 data loading: fetch -> validate -> render; never treat a failure as empty. */
+function validatePayload(p){
+  if (!p || typeof p !== "object" || Array.isArray(p)) throw new Error("bad payload: not an object");
+  if (typeof p.generated_at !== "string" || !ISO_RE.test(p.generated_at) || isNaN(Date.parse(p.generated_at))) throw new Error("bad payload: missing or invalid generated_at");
+  if (!Array.isArray(p.jobs)) throw new Error("bad payload: jobs is not an array");
+  for (const j of p.jobs){
+    if (!j || typeof j !== "object") throw new Error("bad job");
+    if (typeof j.title !== "string" || !j.title.trim()) throw new Error("bad job title");
+    if (typeof j.company !== "string" || !j.company.trim()) throw new Error("bad job company");
+    if (j.url !== undefined && j.url !== null && typeof j.url !== "string") throw new Error("bad job url");
+  }
+  return p;
+}
+function loadCached(){
+  try { const raw = localStorage.getItem(DATA_CACHE_KEY); if (!raw) return null; return validatePayload(JSON.parse(raw)); }
+  catch(e){ return null; }
+}
+function saveCached(p){ try { localStorage.setItem(DATA_CACHE_KEY, JSON.stringify(p)); } catch(e){} }
+function showGridMessage(kind, title, body, retry){
+  const g = $("grid"); g.textContent = "";
+  const em = document.createElement("div"); em.className = "empty";
+  const big = document.createElement("div"); big.className = "big"; big.textContent = kind === "error" ? "⚠️" : "⏳"; em.appendChild(big);
+  const h2 = document.createElement("h2"); h2.textContent = title; em.appendChild(h2);
+  const p = document.createElement("p"); p.textContent = body; em.appendChild(p);
+  if (retry){
+    const b = document.createElement("button"); b.type = "button"; b.className = "btn primary"; b.textContent = "Retry / إعادة المحاولة";
+    b.onclick = () => loadData(); em.appendChild(b);
+  }
+  g.appendChild(em);
+}
+function showStale(){
+  const s = $("stale");
+  if (!DATA_STALE || !DATA){ s.hidden = true; return; }
+  s.hidden = false;
+  s.textContent = "";
+  const b = document.createElement("b");
+  b.textContent = "STALE / CACHED DATA — live update failed. ";
+  s.appendChild(b);
+  s.appendChild(document.createTextNode("Saved copy from " + fmtUtc(DATA.generated_at) + " — not the latest jobs. "));
+  const br = document.createElement("br"); s.appendChild(br);
+  const ar = document.createElement("span");
+  ar.textContent = "بيانات قديمة / محفوظة — فشل التحديث المباشر. نسخة محفوظة من " + fmtUtcAr(DATA.generated_at) + " — ليست أحدث الوظائف.";
+  s.appendChild(ar);
+  const rb = document.createElement("button"); rb.type = "button"; rb.textContent = "Retry / إعادة المحاولة";
+  rb.onclick = () => loadData(); s.appendChild(rb);
+}
+function fetchWithTimeout(url){
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
+  return fetch(url, { signal: ctrl.signal, cache: "no-store" })
+    .then(r => { clearTimeout(t); if (!r.ok) throw new Error("HTTP " + r.status + " from " + url); return r.json(); })
+    .catch(e => { clearTimeout(t); throw e; });
+}
+function loadData(){
+  DATA_ERROR = null;
+  const staleEl = $("stale"); if (staleEl) staleEl.hidden = true;
+  showGridMessage("loading",
+    lang === "ar" ? "جارٍ تحميل الوظائف…" : "Loading jobs…",
+    lang === "ar" ? "جارٍ جلب أحدث لقطة موثقة…" : "Fetching the latest verified snapshot…", false);
+  const snapEl = $("snap");
+  if (snapEl) snapEl.textContent = lang === "ar" ? "جارٍ تحميل أحدث الوظائف…" : "Loading latest jobs…";
+  return fetchWithTimeout(DATA_URL)
+    .catch(e1 => fetchWithTimeout(DATA_FALLBACK_URL).catch(e2 => { throw new Error("primary: " + e1.message + "; fallback: " + e2.message); }))
+    .then(raw => {
+      const payload = validatePayload(raw);
+      setData(payload, false);
+      saveCached(payload);
+      SUG = buildSug();
+      applyTheme(); applyLang(); animateCounts(); showStale();
+    })
+    .catch(err => {
+      DATA_ERROR = err;
+      const cached = loadCached();
+      if (cached){
+        /* Failure + valid cache: show the cached jobs, prominently labelled
+           STALE with the cached snapshot's own timestamp — never as current. */
+        setData(cached, true);
+        SUG = buildSug();
+        applyTheme(); applyLang(); animateCounts(); showStale();
+      } else {
+        /* Failure + no cache: error only. No cards, no empty-success message. */
+        showGridMessage("error",
+          lang === "ar" ? "تعذّر تحميل أحدث الوظائف." : "Could not load the latest jobs.",
+          lang === "ar" ? "تحقق من اتصالك ثم أعد المحاولة. لم يتم عرض أي وظائف لأن التحديث المباشر فشل ولا توجد نسخة محفوظة." : "Check your connection, then try again. No jobs are shown because the live update failed and there is no saved copy.", true);
+        if (snapEl) snapEl.textContent = lang === "ar" ? "تعذّر تحميل أحدث الوظائف." : "Could not load the latest jobs.";
+        const footEl = $("foot"); if (footEl) footEl.textContent = "";
+      }
+    });
 }
 
 /* wiring */
@@ -701,8 +887,8 @@ function init(){
     else if (e.key === "Enter" && sugIdx >= 0) { e.preventDefault(); const o = $("sug").querySelectorAll("[role=option]")[sugIdx]; if (o) o.click(); }
   });
   document.addEventListener("click", e => { if (!e.target.closest(".search-zone")) closeSug(); });
-  SUG = buildSug();
-  applyTheme(); renderBreaks(); applyLang(); animateCounts();
+  applyTheme();
+  loadData();
   const ro = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ e.target.classList.add("in"); ro.unobserve(e.target); } }), { threshold:.05 });
   document.querySelectorAll(".reveal").forEach(el => ro.observe(el));
 }
