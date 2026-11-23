@@ -245,9 +245,11 @@ footer.site b{color:var(--text)}
   .sites{padding:0 14px 6px; gap:4px}
   .site-link{font-size:11.5px; padding:4px 9px}
   .hero{padding:28px 0 4px}
+  /* v2.1: compact rules live inside this query on purpose — a stale
+     .compact class must never hide nav on desktop. */
+  header.bar.compact .sites{display:none}
+  header.bar.compact .bar-in{padding:6px 14px}
 }
-header.bar.compact .sites{display:none}
-header.bar.compact .bar-in{padding:6px 14px}
 .reveal{opacity:0; transform:translateY(14px); transition:opacity .55s var(--ease), transform .55s var(--ease)}
 .reveal.in{opacity:1; transform:none}
 details.archive{margin:0 0 40px; border:1px dashed var(--chip-brd); border-radius:var(--r-lg); padding:14px 18px}
@@ -889,8 +891,10 @@ function loadData(){
 /* wiring */
 function init(){
   const bar = document.querySelector("header.bar");
-  const onScroll = () => { if (bar) bar.classList.toggle("compact", window.scrollY > 140 && matchMedia("(max-width: 760px)").matches); };
-  window.addEventListener("scroll", onScroll, { passive:true }); onScroll();
+  const syncCompact = () => { if (bar) bar.classList.toggle("compact", window.scrollY > 140 && matchMedia("(max-width: 760px)").matches); };
+  window.addEventListener("scroll", syncCompact, { passive:true });
+  window.addEventListener("resize", syncCompact);
+  syncCompact();
   const sw = $("swatches");
   [["light","Light"],["dark","Dark"],["graphite","Graphite"],["navy","Navy"]].forEach(([k, lbl]) => {
     const b = document.createElement("button");
