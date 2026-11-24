@@ -1,6 +1,6 @@
 {
   "site": "marketing",
-  "run_at": "2026-11-24T10:18:09.475980+00:00",
+  "run_at": "2026-11-24T10:22:22.039567+00:00",
   "dry_run": false,
   "fresh_verified": {
     "jobicy_status_endpoint": 41,
@@ -62,7 +62,7 @@
   "build_sha256_16": null,
   "jooble": {
     "status": "skipped",
-    "reason": "fixture mode happy without store",
+    "reason": "fixture mode zero without store",
     "requests": null,
     "unique": null,
     "eligible": null,
