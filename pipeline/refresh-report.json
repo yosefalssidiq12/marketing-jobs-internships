@@ -1,50 +1,16 @@
 {
   "site": "marketing",
-  "run_at": "2026-11-24T10:15:20.602535+00:00",
+  "run_at": "2026-11-24T10:18:09.475980+00:00",
   "dry_run": false,
   "fresh_verified": {
     "jobicy_status_endpoint": 41,
     "bounded_content_check": 2
   },
-  "carried": [],
-  "archived": [
-    {
-      "id": "influencer-supervisor-influencer-marketing-france-viralnatio-influencer-supervisor-influen",
-      "reason": "carried verification older than 0d"
-    },
-    {
-      "id": "influencer-manager-influencer-marketing-france-viralnation-influencer-manager-influencer-m",
-      "reason": "carried verification older than 0d"
-    },
-    {
-      "id": "influencer-director-influencer-marketing-viralnation-influencer-director-influencer-market",
-      "reason": "carried verification older than 0d"
-    },
-    {
-      "id": "account-supervisor-influencer-marketing-france-viralnation-account-supervisor-influencer-m",
-      "reason": "carried verification older than 0d"
-    },
-    {
-      "id": "account-manager-influencer-marketing-france-viralnation-account-manager-influencer-marketi",
-      "reason": "carried verification older than 0d"
-    },
-    {
-      "id": "account-director-influencer-marketing-viralnation-account-director-influencer-marketing-47",
-      "reason": "carried verification older than 0d"
-    },
-    {
-      "id": "praktikum-m-w-d-praktikum-social-media-content-marketing-bel-praktikum-praktikum-social-me",
-      "reason": "absent from fresh fetch and verification stale"
-    },
-    {
-      "id": "fos-praktikant-m-w-d-marketing-mediengestaltung-kamberi-grou-fos-praktikant-mwd-marketing-",
-      "reason": "absent from fresh fetch and verification stale"
-    },
-    {
-      "id": "marketing-campaign-manager-cordance-156119",
-      "reason": "jobicy status endpoint: closed"
-    }
+  "carried": [
+    "general-accountant-digisay-37b2dd9f",
+    "digital-marketing-specialist-supercommerce-b099237b"
   ],
+  "archived": [],
   "excluded": [
     {
       "id": "growth-marketing-manager-m-w-d-account-based-marketing-stabl-growth-marketing-manager-acco",
@@ -60,18 +26,18 @@
     }
   ],
   "errors": [],
-  "prev_jobicy_status_checked": 29,
+  "prev_jobicy_status_checked": 28,
   "counts": {
     "publishable": 45,
-    "prev": 40,
+    "prev": 45,
     "fresh": 43,
-    "carried": 0,
-    "archived": 9,
+    "carried": 2,
+    "archived": 0,
     "excluded": 3
   },
   "fresh_verified_by_source": {
     "arbeitnow": {
-      "eligible": 158,
+      "eligible": 160,
       "fresh_success": 20
     }
   },
@@ -95,15 +61,14 @@
   },
   "build_sha256_16": null,
   "jooble": {
-    "status": "ok",
-    "reason": null,
-    "requests": 0,
-    "unique": 2,
-    "eligible": 2,
-    "promoted": 2,
-    "folded": 2,
+    "status": "skipped",
+    "reason": "fixture mode happy without store",
+    "requests": null,
+    "unique": null,
+    "eligible": null,
+    "promoted": 0,
+    "folded": 0,
     "dropped": 0,
-    "unchecked": 0,
-    "reverified": 0
+    "unchecked": 0
   }
 }
