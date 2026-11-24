@@ -3,8 +3,6 @@ on:
   workflow_dispatch: {}
   schedule:
     - cron: '17 2 * * *'   # daily 04:17 Africa/Cairo (02:17 UTC); off-the-hour to spread load
-  push:
-    branches: ['refresh-*']   # branch rehearsal: a FULL real refresh that writes only to this branch (data-release/<site>.json, index.html, refresh-report.json, pipeline-state.json); production deploys only from main after merge. main never self-triggers
 permissions:
   contents: write
 concurrency:
@@ -35,3 +33,7 @@ jobs:
         env:
           JOOBLE_API_KEY: ${{ secrets.JOOBLE_API_KEY }}
         run: python3 pipeline/jooble_collect.py --site "marketing"
+      - name: Jooble promotion (bounded verified-original promotion; internal unless all gates pass)
+        if: always()
+        continue-on-error: true
+        run: python3 pipeline/jooble_promote.py
