@@ -1,22 +1,82 @@
 {
  "site": "marketing",
- "run_at": "2026-11-23T20:22:50.935175+00:00",
+ "run_at": "2026-11-24T06:38:45.197610+00:00",
  "dry_run": false,
  "fresh_verified": {
-  "jobicy_status_endpoint": 36,
-  "bounded_content_check": 12
+  "jobicy_status_endpoint": 37,
+  "bounded_content_check": 7
  },
- "carried": [
-  "influencer-supervisor-influencer-marketing-france-viralnatio-influencer-supervisor-influen",
-  "influencer-manager-influencer-marketing-france-viralnation-influencer-manager-influencer-m",
-  "influencer-director-influencer-marketing-viralnation-influencer-director-influencer-market",
-  "account-supervisor-influencer-marketing-france-viralnation-account-supervisor-influencer-m",
-  "account-manager-influencer-marketing-france-viralnation-account-manager-influencer-marketi",
-  "account-director-influencer-marketing-viralnation-account-director-influencer-marketing-47",
-  "praktikum-m-w-d-praktikum-social-media-content-marketing-bel-praktikum-praktikum-social-me",
-  "fos-praktikant-m-w-d-marketing-mediengestaltung-kamberi-grou-fos-praktikant-mwd-marketing-"
+ "carried": [],
+ "archived": [
+  {
+   "id": "junior-growth-marketing-manager-m-w-d-cyrus-digital-gmbh-junior-growth-marketing-manager-m",
+   "reason": "carried verification older than 0d"
+  },
+  {
+   "id": "junior-digital-marketing-manager-cyrus-digital-gmbh-junior-digital-marketing-manager-munic",
+   "reason": "carried verification older than 0d"
+  },
+  {
+   "id": "growth-marketing-manager-m-w-d-cyrus-digital-gmbh-growth-marketing-manager-munich-279977",
+   "reason": "carried verification older than 0d"
+  },
+  {
+   "id": "werkstudent-online-marketing-e-commerce-m-w-d-alphatrail-gmb-werkstudent-online-marketing-",
+   "reason": "carried verification older than 0d"
+  },
+  {
+   "id": "brand-produktmanager-e-commerce-m-w-d-vollzeit-remote-first--brand-produktmanager-e-commer",
+   "reason": "carried verification older than 0d"
+  },
+  {
+   "id": "lead-performance-marketing-user-acquisition-m-f-d-whow-games-lead-performance-marketing-us",
+   "reason": "carried verification older than 0d"
+  },
+  {
+   "id": "performance-marketing-manager-meta-ads-senior-media-buyer-m--performance-marketing-manager",
+   "reason": "carried verification older than 0d"
+  },
+  {
+   "id": "marketing-manager-content-social-media-m-w-d-p-p-group-marketing-manager-content-social-me",
+   "reason": "carried verification older than 0d"
+  },
+  {
+   "id": "influencer-supervisor-influencer-marketing-france-viralnatio-influencer-supervisor-influen",
+   "reason": "carried verification older than 0d"
+  },
+  {
+   "id": "influencer-manager-influencer-marketing-france-viralnation-influencer-manager-influencer-m",
+   "reason": "carried verification older than 0d"
+  },
+  {
+   "id": "influencer-director-influencer-marketing-viralnation-influencer-director-influencer-market",
+   "reason": "carried verification older than 0d"
+  },
+  {
+   "id": "account-supervisor-influencer-marketing-france-viralnation-account-supervisor-influencer-m",
+   "reason": "carried verification older than 0d"
+  },
+  {
+   "id": "account-manager-influencer-marketing-france-viralnation-account-manager-influencer-marketi",
+   "reason": "carried verification older than 0d"
+  },
+  {
+   "id": "account-director-influencer-marketing-viralnation-account-director-influencer-marketing-47",
+   "reason": "carried verification older than 0d"
+  },
+  {
+   "id": "praktikum-m-w-d-praktikum-social-media-content-marketing-bel-praktikum-praktikum-social-me",
+   "reason": "absent from fresh fetch and verification stale"
+  },
+  {
+   "id": "fos-praktikant-m-w-d-marketing-mediengestaltung-kamberi-grou-fos-praktikant-mwd-marketing-",
+   "reason": "absent from fresh fetch and verification stale"
+  },
+  {
+   "id": "marketing-campaign-manager-cordance-156119",
+   "reason": "jobicy status endpoint: closed"
+  }
  ],
- "archived": [],
  "excluded": [
   {
    "id": "principal-technical-marketing-engineer-zscaler-163789",
@@ -29,22 +89,26 @@
   {
    "id": "senior-manager-marketing-strategy-operations-givedirectly-156454",
    "reason": "relevance_duties_unconfirmed"
+  },
+  {
+   "id": "werkstudent-in-im-bereich-marketing-gpe-werkstudentin-im-bereich-marketing-hamburg-964",
+   "reason": "relevance_duties_unconfirmed"
   }
  ],
  "errors": [],
- "prev_jobicy_status_checked": 22,
+ "prev_jobicy_status_checked": 23,
  "counts": {
-  "publishable": 56,
-  "prev": 40,
-  "fresh": 48,
-  "carried": 8,
-  "archived": 0,
-  "excluded": 3
+  "publishable": 44,
+  "prev": 56,
+  "fresh": 44,
+  "carried": 0,
+  "archived": 17,
+  "excluded": 4
  },
  "fresh_verified_by_source": {
   "arbeitnow": {
-   "eligible": 155,
-   "fresh_success": 17
+   "eligible": 157,
+   "fresh_success": 25
   }
  },
  "publication_gate": {
@@ -61,9 +125,9 @@
    ]
   },
   "source_counts": {
-   "jobicy": 356,
-   "arbeitnow": 881
+   "jobicy": 353,
+   "arbeitnow": 877
   }
  },
- "build_sha256_16": "e7d053eea0d4cc88"
+ "build_sha256_16": "d2c95646b2bd511d"
 }
