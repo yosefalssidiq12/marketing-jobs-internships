@@ -105,6 +105,19 @@ def main():
     pats = [re.compile(p, re.I) for p in TITLE_PATTERNS[site]]
     errors, per_query = [], []
     candidates = {}
+    prior_new_ids = set()
+    if os.path.exists(STORE):
+        try:
+            prior = json.load(open(STORE, encoding="utf-8"))
+            for c in prior.get("candidates", []):
+                pid = c.get("jooble_id")
+                if pid:
+                    c["runs_seen"] = int(c.get("runs_seen") or 0)
+                    candidates[pid] = c
+        except Exception as e:
+            print("jooble_collect: prior store unreadable, starting fresh:",
+                  type(e).__name__, file=sys.stderr)
+    prior_ids = set(candidates)
 
     for q in QUERIES[site]:
         for page in range(1, MAX_PAGE + 1):
@@ -121,11 +134,16 @@ def main():
             n_new = 0
             for j in jobs:
                 jid = j.get("id")
-                if jid is None or jid in candidates:
+                if jid is None:
+                    continue
+                jid = str(jid)
+                if jid in candidates:
+                    candidates[jid]["last_seen"] = NOW.isoformat()
+                    candidates[jid]["jooble_record_updated"] = j.get("updated")
                     continue
                 title = (j.get("title") or "").strip()
                 source = (j.get("source") or "").strip().lower()
-                candidates[jid] = {
+                candidates[str(jid)] = {
                     "jooble_id": str(jid),
                     "title": title,
                     "company": (j.get("company") or "").strip(),
@@ -138,6 +156,9 @@ def main():
                     "jooble_record_updated": j.get("updated"),
                     "source_posted": None,  # Jooble gives no posting date; never substitute
                     "fetched_at": NOW.isoformat(),
+                    "first_seen": NOW.isoformat(),
+                    "last_seen": NOW.isoformat(),
+                    "runs_seen": 0,
                     "query": q,
                     "vertical": site,
                     "title_relevant": any(p.search(title) for p in pats),
@@ -152,6 +173,15 @@ def main():
                               "returned": len(jobs), "new_unique": n_new})
             time.sleep(1)
 
+    seen_now = prior_new_ids  # placeholder, recomputed below
+    new_today = 0
+    for c in candidates.values():
+        if c.get("last_seen", "").startswith(NOW.date().isoformat()):
+            c["runs_seen"] = int(c.get("runs_seen") or 0) + 1
+        if c.get("first_seen", "").startswith(NOW.date().isoformat()):
+            new_today += 1
+    eligible = sum(1 for c in candidates.values()
+                   if c["title_relevant"] and not c["intermediary_source"])
     store = {
         "run_at": NOW.isoformat(),
         "vertical": site,
@@ -160,8 +190,9 @@ def main():
         "per_query": per_query,
         "errors": errors,
         "unique_candidates": len(candidates),
-        "title_relevant": sum(1 for c in candidates.values() if c["title_relevant"]),
-        "intermediary_excluded": sum(1 for c in candidates.values() if c["intermediary_source"]),
+        "intermediary_removed": sum(1 for c in candidates.values() if c["intermediary_source"]),
+        "eligible_title_relevant_non_intermediary": eligible,
+        "new_today": new_today,
         "candidates": sorted(candidates.values(),
                              key=lambda c: (not c["title_relevant"], c["title"].lower())),
     }
@@ -172,8 +203,9 @@ def main():
     # store and are never committed or uploaded by this prototype.
     print(f"jooble_collect[{site}]: requests={store['requests_made']} "
           f"unique={store['unique_candidates']} "
-          f"title_relevant={store['title_relevant']} "
-          f"intermediary_excluded={store['intermediary_excluded']} "
+          f"intermediary_removed={store['intermediary_removed']} "
+          f"eligible={store['eligible_title_relevant_non_intermediary']} "
+          f"new_today={store['new_today']} "
           f"errors={len(errors)}")
     return 0
 
