@@ -1,13 +1,20 @@
 name: refresh
-# v3 (data-branch architecture, proposal only):
+# v3 (data-branch architecture) + integrated Jooble Egypt top-N (v6 fold-in):
 # - `data-publish` runs ONLY on the daily schedule and publishes ONLY the
 #   verified jobs JSON + pipeline-state.json + refresh-report.json to the
 #   `data` branch (three-file variant, report-persistence amendment).
 #   It never commits to main and never builds the frontend.
+# - Jooble Egypt runs INSIDE data-publish: collect (API, runner-local store)
+#   and promote (bounded original-page verification, incl. same-day re-check
+#   of every previously published Jooble card) run BEFORE refresh.py, and the
+#   fold step after refresh.py appends promoted records to the payload in the
+#   exact card schema, refreshes re-verified labels, and records an honest
+#   jooble section in the report. Fold never touches generated_at (the
+#   publish-ready marker stays authoritative) and never breaks the base
+#   publication: any fold invalidity restores the pre-fold outputs and marks
+#   the report jooble.status=failed.
 # - `frontend-build` runs ONLY on manual workflow_dispatch and rebuilds the
 #   shell on main. It never runs the collector and never touches `data`.
-# - No push trigger (the old `refresh-*` rehearsal path is removed; rehearse
-#   with workflow_dispatch on a fork or a `refresh-*` branch run manually).
 # - No PAT, no new secrets. Both jobs use the built-in GITHUB_TOKEN with
 #   job-level `contents: write` only.
 on:
@@ -20,7 +27,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  # Per-repo value: bapm | ai | marketing (this file ships with bapm).
+  # Per-repo value: bapm | ai | marketing (this file ships with marketing).
   SITE_SLUG: marketing
 
 jobs:
@@ -41,17 +48,16 @@ jobs:
           git ls-remote --exit-code --heads origin data \
             || { echo "::error::data branch does not exist. Create it once from a correctly configured main (see PROPOSAL.md §E) and re-run."; exit 1; }
       - name: Add data worktree
-        run: git worktree add /tmp/data-worktree origin/data
+        run: git fetch --depth=1 origin data && git worktree add --detach /tmp/data-worktree "$(git rev-parse origin/data)"
       - name: Copy accepted state + previous release back (working-tree only)
         run: |
           # N-1: pipeline-state.json is the source of truth on `data`. Copy it
           # back so collect.py merge_state / refresh.py see the accepted state.
           # N-1b: same for the previous data-release JSON — refresh.py reads it
           # as `prev` (same-day carry candidates, gate ratio vs previous
-          # snapshot). Without this, `prev` would be frozen at the pre-split
-          # copy on main and carry would silently stop working after day 1.
-          # Both copies are working-tree only and are restored at the end;
-          # nothing is committed to main.
+          # snapshot) and jooble_promote reads it for the published-card
+          # re-check. Both copies are working-tree only and are restored at
+          # the end; nothing is committed to main.
           if [ -f /tmp/data-worktree/pipeline/pipeline-state.json ]; then
             cp /tmp/data-worktree/pipeline/pipeline-state.json pipeline/pipeline-state.json
           fi
@@ -61,8 +67,92 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
+      - name: Jooble Egypt discovery (runner-local internal store)
+        id: jcollect
+        env:
+          JOOBLE_API_KEY: ${{ secrets.JOOBLE_API_KEY }}
+        run: |
+          echo "JOOBLE_STATUS=skipped" >> "$GITHUB_ENV"
+          EC=0
+          python3 pipeline/jooble_collect.py --site "${SITE_SLUG}" || EC=$?
+          if [ "$EC" -eq 0 ]; then
+            echo "JOOBLE_STATUS=ok" >> "$GITHUB_ENV"
+          else
+            echo "JOOBLE_STATUS=failed" >> "$GITHUB_ENV"
+            echo "JOOBLE_REASON=collect exit $EC" >> "$GITHUB_ENV"
+          fi
+
+      - name: Jooble promotion (bounded original verification + published-card re-check)
+        id: jpromote
+        run: |
+          if [ "${JOOBLE_STATUS}" != "ok" ]; then
+            echo "skipping promote: collect status ${JOOBLE_STATUS}"
+          elif [ ! -f pipeline/jooble-candidates.json ]; then
+            echo "JOOBLE_STATUS=skipped" >> "$GITHUB_ENV"
+            echo "JOOBLE_REASON=no candidate store" >> "$GITHUB_ENV"
+          else
+            EC=0
+            python3 pipeline/jooble_promote.py \
+              --prev-data "pipeline/data-release/${SITE_SLUG}.json" --max-fetches 20 || EC=$?
+            if [ "$EC" -ne 0 ]; then
+              echo "JOOBLE_STATUS=failed" >> "$GITHUB_ENV"
+              echo "JOOBLE_REASON=promote exit $EC" >> "$GITHUB_ENV"
+            fi
+          fi
+
       - name: Run refresh (collect, classify, verify — no build, no publish)
         run: python3 pipeline/refresh.py --site "${SITE_SLUG}" --repo-root .
+
+      - name: Jooble fold (append verified Jooble cards; honest report section)
+        id: jfold
+        run: |
+          DATA="pipeline/data-release/${SITE_SLUG}.json"
+          cp "$DATA" /tmp/fold-backup-data.json
+          cp pipeline/pipeline-state.json /tmp/fold-backup-state.json
+          cp pipeline/refresh-report.json /tmp/fold-backup-report.json
+          FOLD_EC=0
+          python3 pipeline/jooble_fold.py \
+            --data "$DATA" --state pipeline/pipeline-state.json \
+            --report pipeline/refresh-report.json \
+            --promotions pipeline/jooble-promotions.json \
+            --store pipeline/jooble-candidates.json \
+            --status "${JOOBLE_STATUS:-skipped}" \
+            --status-reason "${JOOBLE_REASON:-}" \
+            --date "$(date -u +%F)" || FOLD_EC=$?
+          if [ "$FOLD_EC" -eq 0 ]; then
+            python3 - "$DATA" <<'PY' || FOLD_INVALID=1
+          import json, sys
+          d = json.load(open(sys.argv[1]))
+          r = json.load(open("pipeline/refresh-report.json"))
+          json.load(open("pipeline/pipeline-state.json"))
+          assert "jooble" in r, "jooble section missing from report"
+          assert r["counts"]["publishable"] == len(d["jobs"]), "publishable count mismatch"
+          for j in d["jobs"]:
+              if j.get("source") == "Jooble":
+                  assert (j.get("canonical_key") or "").startswith("jooble:"), "bad jooble canonical_key"
+                  assert j.get("verified") is True, "unverified Jooble card"
+                  assert (j.get("url") or "").startswith("https://"), "non-https Jooble url"
+          print("fold validation OK:", r["jooble"])
+          PY
+          fi
+          if [ "$FOLD_EC" -ne 0 ] || [ "${FOLD_INVALID:-0}" = "1" ]; then
+            cp /tmp/fold-backup-data.json "$DATA"
+            cp /tmp/fold-backup-state.json pipeline/pipeline-state.json
+            cp /tmp/fold-backup-report.json pipeline/refresh-report.json
+            REASON="fold output invalid; base publication restored"
+            [ "$FOLD_EC" -ne 0 ] && REASON="fold exited $FOLD_EC; base publication restored"
+            python3 - "$REASON" <<'PY'
+          import json, sys
+          r = json.load(open("pipeline/refresh-report.json"))
+          r["jooble"] = {"status": "failed", "reason": sys.argv[1],
+                         "requests": None, "unique": None, "eligible": None,
+                         "promoted": 0, "folded": 0, "dropped": 0}
+          json.dump(r, open("pipeline/refresh-report.json", "w"), ensure_ascii=False, indent=2)
+          print("restored base outputs; report marked jooble.status=failed:", sys.argv[1])
+          PY
+          fi
+
       - name: Verify publish-ready marker + payload
         run: |
           MARKER="pipeline/.publish-ready-${SITE_SLUG}"
@@ -105,7 +195,7 @@ jobs:
         run: |
           git worktree remove --force /tmp/data-worktree || true
           git checkout -- pipeline/pipeline-state.json "pipeline/data-release/${SITE_SLUG}.json" pipeline/refresh-report.json 2>/dev/null || true
-          rm -f "pipeline/.publish-ready-${SITE_SLUG}"
+          rm -f "pipeline/.publish-ready-${SITE_SLUG}" pipeline/jooble-candidates.json pipeline/jooble-promotions.json
           test "$(git rev-parse HEAD)" = "$HEAD_BEFORE" || { echo "::error::HEAD moved on main — a main commit was created"; exit 1; }
           test -z "$(git status --porcelain --untracked-files=no)" || { echo "::error::tracked files modified on main checkout:"; git status --porcelain --untracked-files=no; exit 1; }
 
