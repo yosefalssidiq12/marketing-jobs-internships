@@ -1,101 +1,109 @@
 {
- "site": "marketing",
- "run_at": "2026-11-23T03:06:50.971431+00:00",
- "dry_run": false,
- "fresh_verified": {
-  "jobicy_status_endpoint": 32,
-  "bounded_content_check": 8
- },
- "carried": [],
- "archived": [
-  {
-   "id": "marketing-artist-cortex-voodoo-marketing-artist-cortex-paris-39875",
-   "reason": "carried verification older than 0d"
+  "site": "marketing",
+  "run_at": "2026-11-24T10:15:20.602535+00:00",
+  "dry_run": false,
+  "fresh_verified": {
+    "jobicy_status_endpoint": 41,
+    "bounded_content_check": 2
   },
-  {
-   "id": "senior-lifecycle-marketing-manager-all-genders-hellofresh-senior-lifecycle-marketing-manag",
-   "reason": "absent from fresh fetch and verification stale"
+  "carried": [],
+  "archived": [
+    {
+      "id": "influencer-supervisor-influencer-marketing-france-viralnatio-influencer-supervisor-influen",
+      "reason": "carried verification older than 0d"
+    },
+    {
+      "id": "influencer-manager-influencer-marketing-france-viralnation-influencer-manager-influencer-m",
+      "reason": "carried verification older than 0d"
+    },
+    {
+      "id": "influencer-director-influencer-marketing-viralnation-influencer-director-influencer-market",
+      "reason": "carried verification older than 0d"
+    },
+    {
+      "id": "account-supervisor-influencer-marketing-france-viralnation-account-supervisor-influencer-m",
+      "reason": "carried verification older than 0d"
+    },
+    {
+      "id": "account-manager-influencer-marketing-france-viralnation-account-manager-influencer-marketi",
+      "reason": "carried verification older than 0d"
+    },
+    {
+      "id": "account-director-influencer-marketing-viralnation-account-director-influencer-marketing-47",
+      "reason": "carried verification older than 0d"
+    },
+    {
+      "id": "praktikum-m-w-d-praktikum-social-media-content-marketing-bel-praktikum-praktikum-social-me",
+      "reason": "absent from fresh fetch and verification stale"
+    },
+    {
+      "id": "fos-praktikant-m-w-d-marketing-mediengestaltung-kamberi-grou-fos-praktikant-mwd-marketing-",
+      "reason": "absent from fresh fetch and verification stale"
+    },
+    {
+      "id": "marketing-campaign-manager-cordance-156119",
+      "reason": "jobicy status endpoint: closed"
+    }
+  ],
+  "excluded": [
+    {
+      "id": "growth-marketing-manager-m-w-d-account-based-marketing-stabl-growth-marketing-manager-acco",
+      "reason": "relevance_duties_unconfirmed"
+    },
+    {
+      "id": "senior-performance-marketing-manager-google-ads-m-w-d-a-leve-senior-performance-marketing-",
+      "reason": "relevance_duties_unconfirmed"
+    },
+    {
+      "id": "media-buyer-performance-marketing-paid-growth-manager-maorik-media-buyer-performance-marke",
+      "reason": "relevance_duties_unconfirmed"
+    }
+  ],
+  "errors": [],
+  "prev_jobicy_status_checked": 29,
+  "counts": {
+    "publishable": 45,
+    "prev": 40,
+    "fresh": 43,
+    "carried": 0,
+    "archived": 9,
+    "excluded": 3
   },
-  {
-   "id": "social-media-manager-videograf-m-w-d-vollzeit-ekin-immobilie-social-media-manager-videogra",
-   "reason": "absent from fresh fetch and verification stale"
+  "fresh_verified_by_source": {
+    "arbeitnow": {
+      "eligible": 158,
+      "fresh_success": 20
+    }
   },
-  {
-   "id": "social-media-e-mail-marketing-manager-m-w-d-fokus-klettern-b-social-media-e-mail-marketing",
-   "reason": "absent from fresh fetch and verification stale"
+  "publication_gate": {
+    "passed": true,
+    "breaches": [],
+    "rules": {
+      "min_absolute": 5,
+      "min_ratio_vs_prev": 0.5,
+      "require_collection_nonempty": true,
+      "require_fresh_verification": true,
+      "expected_sources_nonempty": [
+        "jobicy",
+        "arbeitnow"
+      ]
+    },
+    "source_counts": {
+      "jobicy": 359,
+      "arbeitnow": 879
+    }
   },
-  {
-   "id": "social-content-manager-jellyfish-social-content-manager-berlin-261563",
-   "reason": "absent from fresh fetch and verification stale"
-  },
-  {
-   "id": "senior-data-scientist-marketing-dsa-vinteden-senior-data-scientist-marketing-dsa-berlin-48",
-   "reason": "absent from fresh fetch and verification stale"
-  },
-  {
-   "id": "junior-marketing-manager-dach-amboss-junior-marketing-manager-dach-berlin-149378",
-   "reason": "absent from fresh fetch and verification stale"
-  },
-  {
-   "id": "senior-product-marketing-manager-emea-camunda-remote-senior-product-marketing-manager-emea",
-   "reason": "absent from fresh fetch and verification stale"
-  },
-  {
-   "id": "senior-partner-marketing-manager-gsis-n8n-senior-partner-marketing-manager-gsis-berlin-448",
-   "reason": "absent from fresh fetch and verification stale"
-  },
-  {
-   "id": "pflichtpraktikum-social-media-und-content-marketing-m-w-d-tr-pflichtpraktikum-social-media",
-   "reason": "absent from fresh fetch and verification stale"
+  "build_sha256_16": null,
+  "jooble": {
+    "status": "ok",
+    "reason": null,
+    "requests": 0,
+    "unique": 2,
+    "eligible": 2,
+    "promoted": 2,
+    "folded": 2,
+    "dropped": 0,
+    "unchecked": 0,
+    "reverified": 0
   }
- ],
- "excluded": [
-  {
-   "id": "principal-technical-marketing-engineer-zscaler-163789",
-   "reason": "relevance_duties_unconfirmed"
-  },
-  {
-   "id": "director-of-product-marketing-proof-156397",
-   "reason": "relevance_duties_unconfirmed"
-  },
-  {
-   "id": "senior-manager-marketing-strategy-operations-givedirectly-156454",
-   "reason": "relevance_duties_unconfirmed"
-  }
- ],
- "errors": [],
- "prev_jobicy_status_checked": 16,
- "counts": {
-  "publishable": 40,
-  "prev": 37,
-  "fresh": 40,
-  "carried": 0,
-  "archived": 10,
-  "excluded": 3
- },
- "fresh_verified_by_source": {
-  "arbeitnow": {
-   "eligible": 132,
-   "fresh_success": 24
-  }
- },
- "publication_gate": {
-  "passed": true,
-  "breaches": [],
-  "rules": {
-   "min_absolute": 5,
-   "min_ratio_vs_prev": 0.5,
-   "require_collection_nonempty": true,
-   "require_fresh_verification": true,
-   "expected_sources_nonempty": [
-    "jobicy",
-    "arbeitnow"
-   ]
-  },
-  "source_counts": {
-   "jobicy": 356,
-   "arbeitnow": 881
-  }
- },
- "build_sha256_16": "46c9d4caaa3bf217"
 }
