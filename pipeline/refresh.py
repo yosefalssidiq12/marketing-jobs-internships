@@ -155,7 +155,7 @@ def main():
 
     def region(loc):
         l = (loc or "").lower()
-        if re.search(r"egypt|cairo|alexandria|giza", l): return "Egypt"
+        if re.search(r"egypt|cairo|alexandria|giza|zamalek|maadi|nasr city|new cairo|heliopolis|smart village|sheikh zayed|6th of october|mohandessin|dokki|helwan|mansoura|tanta|assiut|luxor|aswan|hurghada|sharm|,\\s*eg\\b", l): return "Egypt"
         if re.search(r"uae|dubai|abu dhabi|emirates|sharjah", l): return "UAE"
         if re.search(r"saudi|riyadh|jeddah", l): return "Saudi Arabia"
         if re.search(r"qatar|kuwait|bahrain|oman|doha|gulf|mena", l): return "Other Gulf"
