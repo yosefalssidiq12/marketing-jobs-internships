@@ -1,97 +1,96 @@
 {
- "site": "marketing",
- "run_at": "2026-11-24T03:02:07.364089+00:00",
- "dry_run": false,
- "fresh_verified": {
-  "jobicy_status_endpoint": 37,
-  "bounded_content_check": 9
- },
- "carried": [],
- "archived": [
-  {
-   "id": "influencer-supervisor-influencer-marketing-france-viralnatio-influencer-supervisor-influen",
-   "reason": "carried verification older than 0d"
+  "site": "marketing",
+  "run_at": "2026-11-25T03:09:18.468352+00:00",
+  "dry_run": false,
+  "fresh_verified": {
+    "jobicy_status_endpoint": 44,
+    "bounded_content_check": 4
   },
-  {
-   "id": "influencer-manager-influencer-marketing-france-viralnation-influencer-manager-influencer-m",
-   "reason": "carried verification older than 0d"
+  "carried": [],
+  "archived": [
+    {
+      "id": "werkstudent-social-media-content-creation-mensch-wppmedia-werkstudent-social-media-content",
+      "reason": "absent from fresh fetch and verification stale"
+    },
+    {
+      "id": "werkstudent-online-marketing-e-commerce-m-w-d-alphatrail-gmb-werkstudent-online-marketing-",
+      "reason": "absent from fresh fetch and verification stale"
+    },
+    {
+      "id": "social-media-manager-videograf-m-w-d-vollzeit-ekin-immobilie-social-media-manager-videogra",
+      "reason": "absent from fresh fetch and verification stale"
+    },
+    {
+      "id": "praktikant-online-marketing-content-w-m-d-spread-group-praktikant-online-marketing-content",
+      "reason": "absent from fresh fetch and verification stale"
+    },
+    {
+      "id": "junior-growth-marketing-manager-m-w-d-cyrus-digital-gmbh-junior-growth-marketing-manager-m",
+      "reason": "absent from fresh fetch and verification stale"
+    },
+    {
+      "id": "junior-digital-marketing-manager-cyrus-digital-gmbh-junior-digital-marketing-manager-munic",
+      "reason": "absent from fresh fetch and verification stale"
+    },
+    {
+      "id": "growth-marketing-manager-m-w-d-cyrus-digital-gmbh-growth-marketing-manager-munich-279977",
+      "reason": "absent from fresh fetch and verification stale"
+    },
+    {
+      "id": "founding-head-of-marketing-german-speaking-secfix-founding-head-of-marketing-german-speaki",
+      "reason": "absent from fresh fetch and verification stale"
+    },
+    {
+      "id": "brand-produktmanager-e-commerce-m-w-d-vollzeit-remote-first--brand-produktmanager-e-commer",
+      "reason": "absent from fresh fetch and verification stale"
+    }
+  ],
+  "excluded": [],
+  "errors": [],
+  "prev_jobicy_status_checked": 31,
+  "counts": {
+    "publishable": 51,
+    "prev": 46,
+    "fresh": 48,
+    "carried": 0,
+    "archived": 9,
+    "excluded": 0
   },
-  {
-   "id": "influencer-director-influencer-marketing-viralnation-influencer-director-influencer-market",
-   "reason": "carried verification older than 0d"
+  "fresh_verified_by_source": {
+    "arbeitnow": {
+      "eligible": 158,
+      "fresh_success": 19
+    }
   },
-  {
-   "id": "account-supervisor-influencer-marketing-france-viralnation-account-supervisor-influencer-m",
-   "reason": "carried verification older than 0d"
+  "publication_gate": {
+    "passed": true,
+    "breaches": [],
+    "rules": {
+      "min_absolute": 5,
+      "min_ratio_vs_prev": 0.5,
+      "require_collection_nonempty": true,
+      "require_fresh_verification": true,
+      "expected_sources_nonempty": [
+        "jobicy",
+        "arbeitnow"
+      ]
+    },
+    "source_counts": {
+      "jobicy": 354,
+      "arbeitnow": 880
+    }
   },
-  {
-   "id": "account-manager-influencer-marketing-france-viralnation-account-manager-influencer-marketi",
-   "reason": "carried verification older than 0d"
-  },
-  {
-   "id": "account-director-influencer-marketing-viralnation-account-director-influencer-marketing-47",
-   "reason": "carried verification older than 0d"
-  },
-  {
-   "id": "praktikum-m-w-d-praktikum-social-media-content-marketing-bel-praktikum-praktikum-social-me",
-   "reason": "carried verification older than 0d"
-  },
-  {
-   "id": "fos-praktikant-m-w-d-marketing-mediengestaltung-kamberi-grou-fos-praktikant-mwd-marketing-",
-   "reason": "carried verification older than 0d"
-  },
-  {
-   "id": "marketing-campaign-manager-cordance-156119",
-   "reason": "jobicy status endpoint: closed"
+  "build_sha256_16": null,
+  "jooble": {
+    "status": "ok",
+    "reason": null,
+    "requests": null,
+    "unique": null,
+    "eligible": 39,
+    "promoted": 3,
+    "folded": 3,
+    "dropped": 0,
+    "unchecked": 0,
+    "reverified": 0
   }
- ],
- "excluded": [
-  {
-   "id": "principal-technical-marketing-engineer-zscaler-163789",
-   "reason": "relevance_duties_unconfirmed"
-  },
-  {
-   "id": "director-of-product-marketing-proof-156397",
-   "reason": "relevance_duties_unconfirmed"
-  },
-  {
-   "id": "senior-manager-marketing-strategy-operations-givedirectly-156454",
-   "reason": "relevance_duties_unconfirmed"
-  }
- ],
- "errors": [],
- "prev_jobicy_status_checked": 23,
- "counts": {
-  "publishable": 46,
-  "prev": 40,
-  "fresh": 46,
-  "carried": 0,
-  "archived": 9,
-  "excluded": 3
- },
- "fresh_verified_by_source": {
-  "arbeitnow": {
-   "eligible": 153,
-   "fresh_success": 17
-  }
- },
- "publication_gate": {
-  "passed": true,
-  "breaches": [],
-  "rules": {
-   "min_absolute": 5,
-   "min_ratio_vs_prev": 0.5,
-   "require_collection_nonempty": true,
-   "require_fresh_verification": true,
-   "expected_sources_nonempty": [
-    "jobicy",
-    "arbeitnow"
-   ]
-  },
-  "source_counts": {
-   "jobicy": 356,
-   "arbeitnow": 874
-  }
- },
- "build_sha256_16": null
 }
