@@ -1,44 +1,45 @@
 {
   "site": "marketing",
-  "run_at": "2026-11-24T10:22:22.039567+00:00",
+  "run_at": "2026-11-25T04:09:54.339813+00:00",
   "dry_run": false,
   "fresh_verified": {
-    "jobicy_status_endpoint": 41,
-    "bounded_content_check": 2
+    "jobicy_status_endpoint": 44,
+    "bounded_content_check": 8
   },
-  "carried": [
-    "general-accountant-digisay-37b2dd9f",
-    "digital-marketing-specialist-supercommerce-b099237b"
-  ],
-  "archived": [],
-  "excluded": [
+  "carried": [],
+  "archived": [
     {
-      "id": "growth-marketing-manager-m-w-d-account-based-marketing-stabl-growth-marketing-manager-acco",
-      "reason": "relevance_duties_unconfirmed"
+      "id": "marketing-generalist-brand-events-partnerships-atira-marketing-generalist-brand-events-par",
+      "reason": "absent from fresh fetch and verification stale"
     },
     {
-      "id": "senior-performance-marketing-manager-google-ads-m-w-d-a-leve-senior-performance-marketing-",
-      "reason": "relevance_duties_unconfirmed"
+      "id": "head-of-marketing-communications-se3-head-of-marketing-communications-munich-29119",
+      "reason": "absent from fresh fetch and verification stale"
     },
     {
-      "id": "media-buyer-performance-marketing-paid-growth-manager-maorik-media-buyer-performance-marke",
-      "reason": "relevance_duties_unconfirmed"
+      "id": "general-accountant-digisay-37b2dd9f",
+      "reason": "absent from fresh fetch and verification stale"
+    },
+    {
+      "id": "digital-marketing-specialist-supercommerce-b099237b",
+      "reason": "absent from fresh fetch and verification stale"
     }
   ],
+  "excluded": [],
   "errors": [],
-  "prev_jobicy_status_checked": 28,
+  "prev_jobicy_status_checked": 31,
   "counts": {
-    "publishable": 45,
+    "publishable": 54,
     "prev": 45,
-    "fresh": 43,
-    "carried": 2,
-    "archived": 0,
-    "excluded": 3
+    "fresh": 52,
+    "carried": 0,
+    "archived": 4,
+    "excluded": 0
   },
   "fresh_verified_by_source": {
     "arbeitnow": {
-      "eligible": 160,
-      "fresh_success": 20
+      "eligible": 155,
+      "fresh_success": 22
     }
   },
   "publication_gate": {
@@ -55,20 +56,21 @@
       ]
     },
     "source_counts": {
-      "jobicy": 359,
-      "arbeitnow": 879
+      "jobicy": 352,
+      "arbeitnow": 829
     }
   },
   "build_sha256_16": null,
   "jooble": {
-    "status": "skipped",
-    "reason": "fixture mode zero without store",
-    "requests": null,
-    "unique": null,
-    "eligible": null,
-    "promoted": 0,
-    "folded": 0,
+    "status": "ok",
+    "reason": null,
+    "requests": 0,
+    "unique": 0,
+    "eligible": 0,
+    "promoted": 2,
+    "folded": 2,
     "dropped": 0,
-    "unchecked": 0
+    "unchecked": 0,
+    "reverified": 0
   }
 }
