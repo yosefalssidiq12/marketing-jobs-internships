@@ -57,9 +57,29 @@ ELIG_PAT = re.compile(
 def slug(s):
     return re.sub(r"-+", "-", re.sub(r"[^a-z0-9]+", "-", (s or "").lower())).strip("-")[:60]
 
+COUNTRY_REGION = {
+    "eg": "Egypt", "egypt": "Egypt",
+    "ae": "UAE", "uae": "UAE",
+    "sa": "Saudi Arabia",
+    "qa": "Other Gulf", "kw": "Other Gulf", "bh": "Other Gulf", "om": "Other Gulf",
+    "ca": "USA & Canada", "canada": "USA & Canada",
+    "us": "USA", "usa": "USA", "united states": "USA",
+    "de": "Europe", "germany": "Europe", "hu": "Europe", "hungary": "Europe",
+    "at": "Europe", "austria": "Europe", "cz": "Europe", "pl": "Europe", "poland": "Europe",
+    "ro": "Europe", "se": "Europe", "fi": "Europe", "no": "Europe", "dk": "Europe",
+    "be": "Europe", "ch": "Europe", "ie": "Europe", "es": "Europe", "fr": "Europe",
+    "it": "Europe", "pt": "Europe", "nl": "Europe", "gb": "Europe", "uk": "Europe",
+    "gr": "Europe", "bg": "Europe", "hr": "Europe", "sk": "Europe", "si": "Europe",
+    "ee": "Europe", "lv": "Europe", "lt": "Europe",
+}
+
 def region(loc):
     l = (loc or "").lower()
-    if re.search(r"egypt|cairo|alexandria|giza|zamalek|maadi|nasr city|new cairo|heliopolis|smart village|sheikh zayed|6th of october|mohandessin|dokki|helwan|mansoura|tanta|assiut|luxor|aswan|hurghada|sharm|,\\s*eg\\b", l): return "Egypt"
+    tail = l.rsplit(",", 1)[-1].strip() if "," in l else ""
+    if tail in COUNTRY_REGION:
+        return COUNTRY_REGION[tail]
+    if re.search(r"egypt|cairo|alexandria|giza|zamalek|maadi|nasr city|new cairo|heliopolis|smart village|sheikh zayed|6th of october|mohandessin|dokki|helwan|mansoura|tanta|assiut|luxor|aswan|hurghada|sharm|,\s*eg\b", l): return "Egypt"
+
     if re.search(r"uae|dubai|abu dhabi|emirates|sharjah", l): return "UAE"
     if re.search(r"saudi|riyadh|jeddah", l): return "Saudi Arabia"
     if re.search(r"qatar|kuwait|bahrain|oman|doha|gulf|mena", l): return "Other Gulf"
