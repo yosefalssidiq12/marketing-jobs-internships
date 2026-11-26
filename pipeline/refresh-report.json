@@ -1,65 +1,74 @@
 {
   "site": "marketing",
-  "run_at": "2026-11-25T03:09:18.468352+00:00",
+  "run_at": "2026-11-26T03:06:46.753202+00:00",
   "dry_run": false,
   "fresh_verified": {
-    "jobicy_status_endpoint": 44,
-    "bounded_content_check": 4
+    "jobicy_status_endpoint": 51,
+    "bounded_content_check": 10
   },
   "carried": [],
   "archived": [
     {
-      "id": "werkstudent-social-media-content-creation-mensch-wppmedia-werkstudent-social-media-content",
+      "id": "social-media-specialist-digisay-b31b6c16",
       "reason": "absent from fresh fetch and verification stale"
     },
     {
-      "id": "werkstudent-online-marketing-e-commerce-m-w-d-alphatrail-gmb-werkstudent-online-marketing-",
+      "id": "media-production-social-media-specialist-digisay-451f408a",
       "reason": "absent from fresh fetch and verification stale"
     },
     {
-      "id": "social-media-manager-videograf-m-w-d-vollzeit-ekin-immobilie-social-media-manager-videogra",
+      "id": "digital-marketing-specialist-supercommerce-b099237b",
       "reason": "absent from fresh fetch and verification stale"
     },
     {
-      "id": "praktikant-online-marketing-content-w-m-d-spread-group-praktikant-online-marketing-content",
+      "id": "werkstudent-content-creation-all-genders-miss-germany-studio-werkstudent-content-creation-",
       "reason": "absent from fresh fetch and verification stale"
     },
     {
-      "id": "junior-growth-marketing-manager-m-w-d-cyrus-digital-gmbh-junior-growth-marketing-manager-m",
+      "id": "trainee-content-creation-all-genders-miss-germany-studios-gm-trainee-content-creation-all-",
       "reason": "absent from fresh fetch and verification stale"
     },
     {
-      "id": "junior-digital-marketing-manager-cyrus-digital-gmbh-junior-digital-marketing-manager-munic",
+      "id": "performance-marketing-manager-b2b-paid-kundenbindung-m-w-d-g-performance-marketing-manager",
       "reason": "absent from fresh fetch and verification stale"
     },
     {
-      "id": "growth-marketing-manager-m-w-d-cyrus-digital-gmbh-growth-marketing-manager-munich-279977",
-      "reason": "absent from fresh fetch and verification stale"
-    },
-    {
-      "id": "founding-head-of-marketing-german-speaking-secfix-founding-head-of-marketing-german-speaki",
-      "reason": "absent from fresh fetch and verification stale"
-    },
-    {
-      "id": "brand-produktmanager-e-commerce-m-w-d-vollzeit-remote-first--brand-produktmanager-e-commer",
+      "id": "growth-marketing-manager-m-w-d-denken-bauen-wachsen-viatolea-growth-marketing-manager-denk",
       "reason": "absent from fresh fetch and verification stale"
     }
   ],
-  "excluded": [],
+  "excluded": [
+    {
+      "id": "senior-product-marketing-manager-fund-administration-juniper-156908",
+      "reason": "relevance_duties_unconfirmed"
+    },
+    {
+      "id": "marketing-manager-ki-f-m-amber-marketing-manager-ki-f-m-koln-363170",
+      "reason": "relevance_duties_unconfirmed"
+    },
+    {
+      "id": "product-marketing-manager-digital-in-store-f-m-d-lille-or-pa-product-marketing-manager-dig",
+      "reason": "relevance_duties_unconfirmed"
+    },
+    {
+      "id": "product-marketing-manager-in-store-f-h-x-localisation-lille--product-marketing-manager-in-",
+      "reason": "relevance_duties_unconfirmed"
+    }
+  ],
   "errors": [],
-  "prev_jobicy_status_checked": 31,
+  "prev_jobicy_status_checked": 38,
   "counts": {
-    "publishable": 51,
-    "prev": 46,
-    "fresh": 48,
+    "publishable": 64,
+    "prev": 51,
+    "fresh": 61,
     "carried": 0,
-    "archived": 9,
-    "excluded": 0
+    "archived": 7,
+    "excluded": 4
   },
   "fresh_verified_by_source": {
     "arbeitnow": {
-      "eligible": 158,
-      "fresh_success": 19
+      "eligible": 176,
+      "fresh_success": 25
     }
   },
   "publication_gate": {
@@ -77,7 +86,7 @@
     },
     "source_counts": {
       "jobicy": 354,
-      "arbeitnow": 880
+      "arbeitnow": 859
     }
   },
   "build_sha256_16": null,
