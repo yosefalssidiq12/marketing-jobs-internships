@@ -1,15 +1,47 @@
 {
   "site": "marketing",
-  "run_at": "2026-11-26T03:06:46.753202+00:00",
+  "run_at": "2026-11-27T03:11:00.958319+00:00",
   "dry_run": false,
   "fresh_verified": {
-    "jobicy_status_endpoint": 51,
-    "bounded_content_check": 10
+    "jobicy_status_endpoint": 65,
+    "bounded_content_check": 8
   },
   "carried": [],
   "archived": [
     {
+      "id": "growth-content-strategist-pennylane-sas-growth-content-strategist-paris-379180",
+      "reason": "carried verification older than 0d"
+    },
+    {
+      "id": "working-student-m-f-d-content-creation-visual-storytelling-g-working-student-content-creat",
+      "reason": "absent from fresh fetch and verification stale"
+    },
+    {
+      "id": "intern-m-f-d-brand-communication-german-required-yoummday-intern-brand-communication-germa",
+      "reason": "absent from fresh fetch and verification stale"
+    },
+    {
+      "id": "head-of-marketing-f-m-amber-head-of-marketing-f-m-koln-408493",
+      "reason": "absent from fresh fetch and verification stale"
+    },
+    {
+      "id": "head-of-marketing-communications-m-w-d-inkuplay-ug-haftungsb-head-of-marketing-communicati",
+      "reason": "absent from fresh fetch and verification stale"
+    },
+    {
       "id": "social-media-specialist-digisay-b31b6c16",
+      "reason": "absent from fresh fetch and verification stale"
+    },
+    {
+      "id": "social-media-manager-in-m-w-d-politische-kommunikation-hamme-social-media-managerin-politi",
+      "reason": "absent from fresh fetch and verification stale"
+    },
+    {
+      "id": "social-media-campaign-manager-cell-labs-social-media-campaign-manager-berlin-413435",
+      "reason": "absent from fresh fetch and verification stale"
+    },
+    {
+      "id": "senior-brand-communications-manager-m-w-d-getpress-senior-brand-communications-manager-ber",
       "reason": "absent from fresh fetch and verification stale"
     },
     {
@@ -17,58 +49,42 @@
       "reason": "absent from fresh fetch and verification stale"
     },
     {
+      "id": "marketing-manager-b2b-m-w-d-ki-fokus-lead-gen-content-erstel-marketing-manager-b2b-ki-foku",
+      "reason": "absent from fresh fetch and verification stale"
+    },
+    {
+      "id": "linguist-somali-ui-technical-marketing-remote-lilt-productio-linguist-somali-ui-technical-",
+      "reason": "absent from fresh fetch and verification stale"
+    },
+    {
       "id": "digital-marketing-specialist-supercommerce-b099237b",
-      "reason": "absent from fresh fetch and verification stale"
-    },
-    {
-      "id": "werkstudent-content-creation-all-genders-miss-germany-studio-werkstudent-content-creation-",
-      "reason": "absent from fresh fetch and verification stale"
-    },
-    {
-      "id": "trainee-content-creation-all-genders-miss-germany-studios-gm-trainee-content-creation-all-",
-      "reason": "absent from fresh fetch and verification stale"
-    },
-    {
-      "id": "performance-marketing-manager-b2b-paid-kundenbindung-m-w-d-g-performance-marketing-manager",
-      "reason": "absent from fresh fetch and verification stale"
-    },
-    {
-      "id": "growth-marketing-manager-m-w-d-denken-bauen-wachsen-viatolea-growth-marketing-manager-denk",
       "reason": "absent from fresh fetch and verification stale"
     }
   ],
   "excluded": [
     {
-      "id": "senior-product-marketing-manager-fund-administration-juniper-156908",
+      "id": "field-event-marketing-manager-apac-singapore-deepgram-164357",
       "reason": "relevance_duties_unconfirmed"
     },
     {
-      "id": "marketing-manager-ki-f-m-amber-marketing-manager-ki-f-m-koln-363170",
-      "reason": "relevance_duties_unconfirmed"
-    },
-    {
-      "id": "product-marketing-manager-digital-in-store-f-m-d-lille-or-pa-product-marketing-manager-dig",
-      "reason": "relevance_duties_unconfirmed"
-    },
-    {
-      "id": "product-marketing-manager-in-store-f-h-x-localisation-lille--product-marketing-manager-in-",
+      "id": "product-marketing-manager-dataiku-151480",
       "reason": "relevance_duties_unconfirmed"
     }
   ],
   "errors": [],
-  "prev_jobicy_status_checked": 38,
+  "prev_jobicy_status_checked": 46,
   "counts": {
-    "publishable": 64,
-    "prev": 51,
-    "fresh": 61,
+    "publishable": 76,
+    "prev": 64,
+    "fresh": 73,
     "carried": 0,
-    "archived": 7,
-    "excluded": 4
+    "archived": 13,
+    "excluded": 2
   },
   "fresh_verified_by_source": {
     "arbeitnow": {
-      "eligible": 176,
-      "fresh_success": 25
+      "eligible": 143,
+      "fresh_success": 24
     }
   },
   "publication_gate": {
@@ -85,8 +101,8 @@
       ]
     },
     "source_counts": {
-      "jobicy": 354,
-      "arbeitnow": 859
+      "jobicy": 369,
+      "arbeitnow": 844
     }
   },
   "build_sha256_16": null,
@@ -95,7 +111,7 @@
     "reason": null,
     "requests": null,
     "unique": null,
-    "eligible": 39,
+    "eligible": 25,
     "promoted": 3,
     "folded": 3,
     "dropped": 0,
