@@ -1,31 +1,43 @@
 {
   "site": "marketing",
-  "run_at": "2026-11-27T03:11:00.958319+00:00",
+  "run_at": "2026-11-28T03:03:55.971694+00:00",
   "dry_run": false,
   "fresh_verified": {
-    "jobicy_status_endpoint": 65,
-    "bounded_content_check": 8
+    "jobicy_status_endpoint": 78,
+    "bounded_content_check": 3
   },
   "carried": [],
   "archived": [
     {
-      "id": "growth-content-strategist-pennylane-sas-growth-content-strategist-paris-379180",
+      "id": "meewerk-stage-marketing-communicatie-heras-b-v-meewerk-stage-marketing-communicatie-oirsch",
       "reason": "carried verification older than 0d"
     },
     {
-      "id": "working-student-m-f-d-content-creation-visual-storytelling-g-working-student-content-creat",
+      "id": "stageopdracht-video-content-creator-noldus-stageopdracht-video-content-creator-wageningen-",
+      "reason": "carried verification older than 0d"
+    },
+    {
+      "id": "customer-marketing-manager-emea-horizon3ai-customer-marketing-manager-emea-amsterdam-38580",
+      "reason": "carried verification older than 0d"
+    },
+    {
+      "id": "marketing-operations-deepjudge-marketing-operations-zurich-79629",
+      "reason": "carried verification older than 0d"
+    },
+    {
+      "id": "marketing-intern-events-community-anybotics-marketing-intern-events-community-zurich-42487",
+      "reason": "carried verification older than 0d"
+    },
+    {
+      "id": "werkstudent-praktikant-m-w-d-growth-marketing-content-strive-werkstudent-praktikant-growth",
       "reason": "absent from fresh fetch and verification stale"
     },
     {
-      "id": "intern-m-f-d-brand-communication-german-required-yoummday-intern-brand-communication-germa",
+      "id": "werkstudent-in-marketing-m-w-d-volt-venture-gmbh-werkstudent-in-marketing-munster-489233",
       "reason": "absent from fresh fetch and verification stale"
     },
     {
-      "id": "head-of-marketing-f-m-amber-head-of-marketing-f-m-koln-408493",
-      "reason": "absent from fresh fetch and verification stale"
-    },
-    {
-      "id": "head-of-marketing-communications-m-w-d-inkuplay-ug-haftungsb-head-of-marketing-communicati",
+      "id": "praktikant-m-w-d-rpa-automatisierung-im-marketing-vollzeit-r-praktikant-rpa-automatisierun",
       "reason": "absent from fresh fetch and verification stale"
     },
     {
@@ -33,58 +45,38 @@
       "reason": "absent from fresh fetch and verification stale"
     },
     {
-      "id": "social-media-manager-in-m-w-d-politische-kommunikation-hamme-social-media-managerin-politi",
-      "reason": "absent from fresh fetch and verification stale"
-    },
-    {
-      "id": "social-media-campaign-manager-cell-labs-social-media-campaign-manager-berlin-413435",
-      "reason": "absent from fresh fetch and verification stale"
-    },
-    {
-      "id": "senior-brand-communications-manager-m-w-d-getpress-senior-brand-communications-manager-ber",
-      "reason": "absent from fresh fetch and verification stale"
-    },
-    {
       "id": "media-production-social-media-specialist-digisay-451f408a",
-      "reason": "absent from fresh fetch and verification stale"
-    },
-    {
-      "id": "marketing-manager-b2b-m-w-d-ki-fokus-lead-gen-content-erstel-marketing-manager-b2b-ki-foku",
-      "reason": "absent from fresh fetch and verification stale"
-    },
-    {
-      "id": "linguist-somali-ui-technical-marketing-remote-lilt-productio-linguist-somali-ui-technical-",
       "reason": "absent from fresh fetch and verification stale"
     },
     {
       "id": "digital-marketing-specialist-supercommerce-b099237b",
       "reason": "absent from fresh fetch and verification stale"
+    },
+    {
+      "id": "senior-field-marketing-manager-events-harness-156221",
+      "reason": "jobicy status endpoint: closed"
     }
   ],
   "excluded": [
     {
-      "id": "field-event-marketing-manager-apac-singapore-deepgram-164357",
-      "reason": "relevance_duties_unconfirmed"
-    },
-    {
-      "id": "product-marketing-manager-dataiku-151480",
+      "id": "product-marketing-agents-elevenlabs-164502",
       "reason": "relevance_duties_unconfirmed"
     }
   ],
   "errors": [],
-  "prev_jobicy_status_checked": 46,
+  "prev_jobicy_status_checked": 62,
   "counts": {
-    "publishable": 76,
-    "prev": 64,
-    "fresh": 73,
+    "publishable": 84,
+    "prev": 76,
+    "fresh": 81,
     "carried": 0,
-    "archived": 13,
-    "excluded": 2
+    "archived": 12,
+    "excluded": 1
   },
   "fresh_verified_by_source": {
     "arbeitnow": {
-      "eligible": 143,
-      "fresh_success": 24
+      "eligible": 142,
+      "fresh_success": 13
     }
   },
   "publication_gate": {
@@ -101,8 +93,8 @@
       ]
     },
     "source_counts": {
-      "jobicy": 369,
-      "arbeitnow": 844
+      "jobicy": 360,
+      "arbeitnow": 874
     }
   },
   "build_sha256_16": null,
@@ -111,7 +103,7 @@
     "reason": null,
     "requests": null,
     "unique": null,
-    "eligible": 25,
+    "eligible": 36,
     "promoted": 3,
     "folded": 3,
     "dropped": 0,
